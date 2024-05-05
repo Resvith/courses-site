@@ -50,4 +50,8 @@ export default {
     filter: invert(100%);
 }
 
+#carouselExample{
+    background-color: #f5f5f5;
+}
+
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <the-nav></the-nav>
-    <router-view></router-view>
+    <home-page></home-page>
     <footer-component></footer-component>
   </div>
 </template>
@@ -12,11 +12,13 @@ export default {
   name: 'App',
   components: {
     TheNav,
-    FooterComponent
+    HomePage,
+    FooterComponent,
   }
 }
 
 import TheNav from './components/TheNav.vue'
+import HomePage from './components/HomePage.vue'
 import FooterComponent from './components/FooterComponent.vue'
 </script>
 

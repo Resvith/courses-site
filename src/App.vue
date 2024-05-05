@@ -18,7 +18,7 @@ export default {
 }
 
 import TheNav from './components/TheNav.vue'
-import HomePage from './components/HomePage.vue'
+import HomePage from './components/HomePage/HomePage.vue'
 import FooterComponent from './components/FooterComponent.vue'
 </script>
 

@@ -5,13 +5,19 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "start-frontend": "vue-cli-service serve",
+    "start-backend": "cd src && node server.js",
+    "open-new-cmd": "wt -w 0 new-tab -p \"Command Prompt\" --tabColor blue --title \"Commands\" cmd /k \"cd /d %cd%\"",
+    "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\" \"npm run open-new-cmd\""
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
     "bootstrap5": "^1.1.9",
+    "concurrently": "^8.2.2",
     "core-js": "^3.8.3",
+    "express": "^4.19.2",
     "vue": "^3.2.13",
     "vue-router": "^4.3.2"
   },

@@ -7,16 +7,16 @@
 </template>
     
 <script>
-import CoursesSelection from './CoursesSelection.vue';
-import PhotoCarousel from './PhotoCarousel.vue';
-import TrustedCompanies from './TrustedCompanies.vue';
 
+import CoursesSelection from '../components/HomePage/CoursesSelection.vue';
+import PhotoCarousel from '../components/HomePage/PhotoCarousel.vue';
+import TrustedCompanies from '../components/HomePage/TrustedCompanies.vue';
 export default {
     name: 'HomePage',
     components: {
         PhotoCarousel,
         TrustedCompanies,
-        CoursesSelection
+        CoursesSelection,
     },
 }
 </script>

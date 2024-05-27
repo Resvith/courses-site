@@ -1,7 +1,9 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">CourseCrafters</a>
+      <router-link :to="{ path: './' }">
+        CourseCrafters
+      </router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -49,15 +51,21 @@
         <button class="btn btn-outline-primary ms-2 d-lg-none" type="button">Log In</button>
         <button class="btn btn-primary ms-2 d-lg-none" type="button">Register</button>
       </div>
-      <button class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
-      <button class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
+      <router-link :to="{ path: './login' }">
+          <button class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
+      </router-link>
+      <router-link :to="{ path: './register' }">
+        <button class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
+      </router-link>
     </div>
   </nav>
 </template>
 
 <script>
 export default {
-  name: 'TheNav'
+  name: 'TheNav',
+  components: {
+  }
 }
 </script>
 

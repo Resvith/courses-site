@@ -1,5 +1,6 @@
 <template>
     <form class="container" @submit.prevent="submitLogin">
+        <p id="loginInformation"> {{ loginMessage }}</p>
         <!-- Email input -->
         <div data-mdb-input-init class="form-outline mb-4">
           <input v-model=userData.userName type="text" id="usernameInput" class="form-control" required/>
@@ -63,15 +64,21 @@
             return {
                 userData: {
                     userName: '',
-                    userPass: ''
-                }
+                    userPass: '',
+                },
+                loginMessage: ''
             }
         },
         methods: {
             submitLogin() {
-              axios.post('http://localhost:3000/api/users', this.userData)
+              axios.post('http://localhost:3000/api/login', this.userData)
                 .then(response => {
-                  console.log("Data sent successfully:", response.data);
+                  console.log("Is logged in:", response.data);
+                  if(response.data) {
+                    this.loginMessage = "";
+                  } else {
+                    this.loginMessage = "Incorrect login information, please try again";
+                  }
                 })
                 .catch(error => {
                   console.error("There was an error:", error);
@@ -80,3 +87,10 @@
         }
     }
 </script>
+
+<style>
+  #loginInformation {
+    color: red;
+    font-size: 1.5em;
+  }
+</style>

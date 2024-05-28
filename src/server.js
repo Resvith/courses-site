@@ -18,16 +18,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
     res.send('Hello from Node.js!');
-});app.listen(port, () => {
+});
+
+app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
-app.post('/api/users', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     const userData = req.body;
     
-    const user = await loginUser(userData.userName, userData.userPass);
+    // return true if user is logged in, false otherwise
+    const isLoggedOn = await loginUser(userData.userName, userData.userPass);
 
-    console.log("Node:", user);
-    res.send(user);
+    console.log("Is Logged On:", isLoggedOn);
+    res.send(isLoggedOn);
   });
   

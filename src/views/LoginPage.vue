@@ -1,15 +1,15 @@
 <template>
-    <form class="container">
+    <form class="container" @submit.prevent="submitLogin">
         <!-- Email input -->
         <div data-mdb-input-init class="form-outline mb-4">
-          <input type="email" id="form2Example1" class="form-control" />
-          <label class="form-label" for="form2Example1">Email address</label>
+          <input v-model=userData.userName type="text" id="usernameInput" class="form-control" required/>
+          <label class="form-label" for="usernameInput">Username</label>
         </div>
       
         <!-- Password input -->
         <div data-mdb-input-init class="form-outline mb-4">
-          <input type="password" id="form2Example2" class="form-control" />
-          <label class="form-label" for="form2Example2">Password</label>
+          <input v-model=userData.userPass type="password" id="passwordInput" class="form-control" required/>
+          <label class="form-label" for="passwordInput">Password</label>
         </div>
       
         <!-- 2 column grid layout for inline styling -->
@@ -29,7 +29,7 @@
         </div>
       
         <!-- Submit button -->
-        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">Sign in</button>
+        <button type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">Sign in</button>
       
         <!-- Register buttons -->
         <div class="text-center">
@@ -56,7 +56,27 @@
 </template>
 
 <script>
+  import axios from 'axios';
     export default {
-        name: 'LoginPage'
+        name: 'LoginPage',
+        data() {
+            return {
+                userData: {
+                    userName: '',
+                    userPass: ''
+                }
+            }
+        },
+        methods: {
+            submitLogin() {
+              axios.post('http://localhost:3000/api/users', this.userData)
+                .then(response => {
+                  console.log("Data sent successfully:", response.data);
+                })
+                .catch(error => {
+                  console.error("There was an error:", error);
+                });
+            }
+        }
     }
 </script>

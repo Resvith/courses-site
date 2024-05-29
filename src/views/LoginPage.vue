@@ -3,13 +3,13 @@
         <p id="loginInformation"> {{ loginMessage }}</p>
         <!-- Email input -->
         <div data-mdb-input-init class="form-outline mb-4">
-          <input v-model=userData.userName type="text" id="usernameInput" class="form-control" required/>
+          <input v-model=userData.username type="text" id="usernameInput" class="form-control" required/>
           <label class="form-label" for="usernameInput">Username</label>
         </div>
       
         <!-- Password input -->
         <div data-mdb-input-init class="form-outline mb-4">
-          <input v-model=userData.userPass type="password" id="passwordInput" class="form-control" required/>
+          <input v-model=userData.password type="password" id="passwordInput" class="form-control" required/>
           <label class="form-label" for="passwordInput">Password</label>
         </div>
       
@@ -63,8 +63,8 @@
         data() {
             return {
                 userData: {
-                    userName: '',
-                    userPass: '',
+                    username: '',
+                    password: '',
                 },
                 loginMessage: ''
             }

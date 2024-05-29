@@ -9,3 +9,12 @@ Content-Type: application/json
     "userName": "John Doe",
     "password": "password"
 }
+
+###
+
+GET http://localhost:3000/api/check-username/admin
+
+
+###
+
+GET http://localhost:3000/api/check-username/123

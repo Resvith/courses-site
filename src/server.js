@@ -6,7 +6,7 @@ const path = require('path');
 const port = 3000;
 const app = express();
 
-const { loginUser } = require('./api/database.js');
+const { loginUser, isUsernameAvailable, isEmailAvailable } = require('./api/database.js');
 
 app.use(cors({
   origin: 'http://localhost:8080', 
@@ -33,4 +33,16 @@ app.post('/api/login', async (req, res) => {
     console.log("Is Logged On:", isLoggedOn);
     res.send(isLoggedOn);
   });
+
+app.get('/api/check-username/:username' , async (req, res) => {
+    const username = req.params.username;
+    const isAvailable = await isUsernameAvailable(username);
+    res.send(isAvailable);
+});
+
+app.get('/api/check-email/:email' , async (req, res) => {
+  const email = req.params.email;
+  const isAvailable = await isEmailAvailable(email);
+  res.send(isAvailable);
+});
   

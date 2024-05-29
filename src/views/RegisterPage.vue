@@ -63,22 +63,34 @@ export default {
   },
   methods: {
 
-    submitRegistration() {
-      if (!this.arePasswordsTheSame()) {
-        return;
-      }
-      if (!this.enoughPasswordComplexity()) {
-        this.errors.passwordError = 'Password must be at least 8 characters long and contain at least one uppercase letter, one number and one special character';
-        return;
-      }
-      this.isUsernameAvailable(this.userData.username);
-      this.isEmailAvailable(this.userData.email); 
+    async submitRegistration() {
+      // if (!this.arePasswordsTheSame()) {
+      //   return;
+      // }
+      // if (!this.enoughPasswordComplexity()) {
+      //   this.errors.passwordError = 'Password must be at least 8 characters long and contain at least one uppercase letter, one number and one special character';
+      //   return;
+      // }
+      const isUsernameAvailable = await this.isUsernameAvailable(this.userData.username);
+        if (!isUsernameAvailable){
+            this.errors.usernameError = 'Username is already taken';
+            return;
+        }
+
+        const isEmailAvailable = await this.isEmailAvailable(this.userData.email);
+        if (!isEmailAvailable){
+            this.errors.emailError = 'Email is already taken';
+            return;
+        }
+
+        const response = await axios.post('http://localhost:3000/api/register', this.userData);
+        console.log('Registration response:', response.data);
     },
 
     async isUsernameAvailable() {
         try {
             const response = await axios.get(`http://localhost:3000/api/check-username/${this.userData.username}`);
-            console.log(response.data);
+            console.log("User available: ", response.data);
             return response.data;
         } catch (error) {
             console.error('Error checking username availability:', error.response ? error.response.data : error.message);
@@ -89,7 +101,7 @@ export default {
     async isEmailAvailable() {
       try {
             const response = await axios.get(`http://localhost:3000/api/check-email/${this.userData.email}`);
-            console.log(response.data);
+            console.log("Email available: ", response.data);
             return response.data;
         } catch (error) {
             console.error('Error checking username availability:', error.response ? error.response.data : error.message);

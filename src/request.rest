@@ -18,3 +18,18 @@ GET http://localhost:3000/api/check-username/admin
 ###
 
 GET http://localhost:3000/api/check-username/123
+
+
+###
+
+
+POST http://localhost:3000/api/register
+Content-Type: application/json
+
+{
+    "userData": {
+        "username": "John Doe",
+        "email": "chuj@chujowo.pl",
+        "password": "12p@assword"
+    }
+}

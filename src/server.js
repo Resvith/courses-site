@@ -6,13 +6,14 @@ const path = require('path');
 const port = 3000;
 const app = express();
 
-const { loginUser, isUsernameAvailable, isEmailAvailable } = require('./api/database.js');
+const { loginUser, isUsernameAvailable, isEmailAvailable, createUser } = require('./api/database.js');
 
 app.use(cors({
   origin: 'http://localhost:8080', 
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
+
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -28,7 +29,7 @@ app.post('/api/login', async (req, res) => {
     const userData = req.body;
     
     // return true if user is logged in, false otherwise
-    const isLoggedOn = await loginUser(userData.userName, userData.userPass);
+    const isLoggedOn = await loginUser(userData.username, userData.password);
 
     console.log("Is Logged On:", isLoggedOn);
     res.send(isLoggedOn);
@@ -46,3 +47,12 @@ app.get('/api/check-email/:email' , async (req, res) => {
   res.send(isAvailable);
 });
   
+app.post('/api/register', async (req, res) => {
+    const userData = req.body;
+    const username = userData.username;
+    const email = userData.email;
+    const password = userData.password;
+    console.log("Password:", password);
+    createUser(username, email, password);
+    res.send(true);
+  });

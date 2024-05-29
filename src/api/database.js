@@ -1,4 +1,6 @@
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+
 
 // Utwórz pulę połączeń
 const pool = new Pool({
@@ -10,17 +12,22 @@ const pool = new Pool({
 });
 
 async function loginUser(username, password) {
-  const query = 'SELECT * FROM users WHERE (username = $1 OR email = $1) AND password = $2';
-  const params = [username, password];
+  const query = 'SELECT * FROM users WHERE username = $1 OR email = $1';
+  const params = [username];
 
   try {
     // Pobierz połączenie z puli
     const client = await pool.connect();
-    
     const result = await client.query(query, params);
     client.release(); // Zwróć połączenie do puli
+    
     if (result.rows.length > 0) {
-      return true;
+      const passwordDb = result.rows[0].password;
+      const isPasswordCorrect = await bcrypt.compare(password, passwordDb);
+      console.log("Password podane: ", password);
+      console.log("Password z bazy: ", passwordDb);
+      console.log("Is password correct: ", isPasswordCorrect);
+      return isPasswordCorrect;
     } else {
       return false;
     }
@@ -68,8 +75,30 @@ async function isEmailAvailable(email) {
       }
 }
 
+async function createUser(username, email, password) {
+  const insertQuery = 'INSERT INTO users (username, email, password, user_type) VALUES ($1, $2, $3, $4)';  
+  try {
+    // Connect to the database
+    const client = await pool.connect();
+    
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
+    userType = 'user';
+    const insertParams = [username, email, hashedPassword, userType];
+    
+    await client.query(insertQuery, insertParams);
+    client.release();
+    return true;
+
+  } catch (err) {
+    console.error('Error creating user:', err);
+    throw err;
+  }
+}
+
 module.exports = {
   loginUser,
   isUsernameAvailable,
   isEmailAvailable,
+  createUser,
 };

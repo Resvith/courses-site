@@ -24,9 +24,6 @@ async function loginUser(username, password) {
     if (result.rows.length > 0) {
       const passwordDb = result.rows[0].password;
       const isPasswordCorrect = await bcrypt.compare(password, passwordDb);
-      console.log("Password podane: ", password);
-      console.log("Password z bazy: ", passwordDb);
-      console.log("Is password correct: ", isPasswordCorrect);
       return isPasswordCorrect;
     } else {
       return false;
@@ -96,9 +93,31 @@ async function createUser(username, email, password) {
   }
 }
 
+async function checkSession(token) {
+  const query = 'SELECT * FROM sessions WHERE sid = $1';
+  const params = [token];
+  // console.log("Token in database: ", token);
+
+  try {
+    const client = await pool.connect();
+    const result = await client.query(query, params);
+    client.release();
+    if (result.rows.length > 0) {
+      return true;
+    } else {
+      return false;
+    } 
+      } catch (err) {
+        console.error('Error fetching token:', err);
+        throw err;
+      }
+}
+
 module.exports = {
+  pool,
   loginUser,
   isUsernameAvailable,
   isEmailAvailable,
   createUser,
+  checkSession,
 };

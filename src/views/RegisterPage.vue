@@ -61,6 +61,9 @@ export default {
       }
     }
   },
+  created() {
+    this.checkSession();
+  },
   methods: {
 
     async submitRegistration() {
@@ -84,6 +87,10 @@ export default {
         }
 
         const response = await axios.post('http://localhost:3000/api/register', this.userData);
+
+        if (response.data){
+            this.$router.push('/login');
+        }
         console.log('Registration response:', response.data);
     },
 
@@ -152,7 +159,29 @@ export default {
       // Combine all tests
       const allTestsPass = lengthTestResult && upperCaseTestResult && digitTestResult && specialCharTestResult;
       return allTestsPass;
-    }
+    },
+
+    async checkSession() {
+              // console.log("Checking session");
+              // console.log("Vue Token: ", localStorage.getItem('token'));
+              if (!localStorage.getItem('token')) {
+                // console.log("Token not found");
+                return;
+              }
+              // console.log("Token exists");
+              await axios.get(`http://localhost:3000/api/check-session/${localStorage.getItem('token')}`, { withCredentials: true })
+                .then(response => {
+                  // console.log("Token response: ", response.data);
+                    if (response.data.success) {
+                        this.$router.push('/');
+                    } else {
+                        // Do nothing or notify user if needed
+                    }
+                })
+                .catch(error => {
+                    console.error("There was an error:", error);
+                });
+            },
   }
 }
 

@@ -63,28 +63,58 @@
         data() {
             return {
                 userData: {
-                    username: '',
-                    password: '',
+                    username: 'admin',
+                    password: 'admin',
                 },
-                loginMessage: ''
+                loginMessage: '',
+                isLoggedIn: false,
             }
         },
+
+        created() {
+          this.checkSession();
+        },
+
         methods: {
             submitLogin() {
               axios.post('http://localhost:3000/api/login', this.userData)
                 .then(response => {
-                  console.log("Is logged in:", response.data);
-                  if(response.data) {
+                  console.log("Is login correct:", response.data.success);
+                  if(response.data.success) {
+                    localStorage.setItem('token', response.data.token);
                     this.loginMessage = "";
+                    this.$router.push('/');
                   } else {
-                    this.loginMessage = "Incorrect login information, please try again";
+                    this.loginMessage = response.data.message;
                   }
                 })
                 .catch(error => {
                   console.error("There was an error:", error);
                 });
-            }
-        }
+            },
+
+            async checkSession() {
+              // console.log("Checking session");
+              // console.log("Vue Token: ", localStorage.getItem('token'));
+              if (!localStorage.getItem('token')) {
+                // console.log("Token not found");
+                return;
+              }
+              // console.log("Token exists");
+              await axios.get(`http://localhost:3000/api/check-session/${localStorage.getItem('token')}`, { withCredentials: true })
+                .then(response => {
+                  // console.log("Token response: ", response.data);
+                    if (response.data.success) {
+                        this.$router.push('/');
+                    } else {
+                        // Do nothing or notify user if needed
+                    }
+                })
+                .catch(error => {
+                    console.error("There was an error:", error);
+                });
+            },
+        },
     }
 </script>
 

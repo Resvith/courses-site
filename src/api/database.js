@@ -113,6 +113,25 @@ async function checkSession(token) {
       }
 }
 
+async function deleteSession(token) {
+  const query = 'DELETE FROM sessions WHERE sid = $1';
+  const params = [token];
+  try {
+    const client = await pool.connect();
+    const result = await client.query(query, params);
+    client.release();
+
+    if (result.rowCount > 0) {
+      return true; // Indicating that something was deleted
+    } else {
+      return false; // Indicating that no row was deleted
+    }
+  } catch (err) {
+    console.error('Error deleting token:', err);
+    throw err;
+  }
+}
+
 module.exports = {
   pool,
   loginUser,
@@ -120,4 +139,5 @@ module.exports = {
   isEmailAvailable,
   createUser,
   checkSession,
+  deleteSession,
 };

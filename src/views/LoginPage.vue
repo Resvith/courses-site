@@ -104,15 +104,16 @@
               await axios.get(`http://localhost:3000/api/check-session/${localStorage.getItem('token')}`, { withCredentials: true })
                 .then(response => {
                   // console.log("Token response: ", response.data);
-                    if (response.data.success) {
-                        this.$router.push('/');
-                    } else {
+                  if (response.data.success) {
+                    this.$router.push('/');
+                  } else {
                         // Do nothing or notify user if needed
                     }
                 })
                 .catch(error => {
                     console.error("There was an error:", error);
-                });
+                }
+              );
             },
         },
     }

@@ -57,14 +57,38 @@
       <router-link :to="{ path: './register' }">
         <button class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
       </router-link>
+      <button class="btn btn-outline-primary ms-2 d-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
     </div>
   </nav>
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   name: 'TheNav',
   components: {
+  },
+  methods: {
+    async logout() {
+      try {
+        const token = localStorage.getItem('token');
+        console.log("Stored token from nav: ", token);
+        if (!token) {
+          this.$router.push({ path: './login' });
+          return;
+        }
+        try {
+          await axios.delete(`http://localhost:3000/api/logout/${token}`, { withCredentials: true });
+        } catch (error) {
+          console.error("Database deleting error,", error);
+        }
+        await localStorage.removeItem('token');
+        console.log("Should push to login now");
+        this.$router.push({ path: './login' });
+      } catch (error) {
+        console.error(error);
+      }
+    }
   }
 }
 </script>

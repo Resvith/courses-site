@@ -29,7 +29,8 @@
     "path": "^0.12.7",
     "pg": "^8.11.5",
     "vue": "^3.2.13",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

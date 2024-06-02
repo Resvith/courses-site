@@ -48,31 +48,68 @@
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
-        <button class="btn btn-outline-primary ms-2 d-lg-none" type="button">Log In</button>
-        <button class="btn btn-primary ms-2 d-lg-none" type="button">Register</button>
+        <router-link :to="{ path: './login' }">
+          <button v-if="!isLoggedIn" class="btn btn-outline-primary ms-2 d-lg-none" type="button">Log In</button>
+        </router-link>
+        <router-link :to="{ path: './register' }">
+          <button v-if="!isLoggedIn" class="btn btn-primary ms-2 d-lg-none" type="button">Register</button>
+        </router-link>
+        <button v-if="isLoggedIn" class="btn btn-primary ms-2 d-lg-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
       </div>
       <router-link :to="{ path: './login' }">
-          <button class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
+          <button v-if="!isLoggedIn" class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
       </router-link>
       <router-link :to="{ path: './register' }">
-        <button class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
+        <button v-if="!isLoggedIn" class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
       </router-link>
-      <button class="btn btn-outline-primary ms-2 d-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
+      <button v-if="isLoggedIn" class="btn btn-outline-primary ms-2 d-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
     </div>
   </nav>
 </template>
 
 <script>
 import axios from 'axios';
+// import { mapActions } from 'vuex';
+import { mapState } from 'vuex';
+
 export default {
   name: 'TheNav',
   components: {
   },
+
+  created() {
+    this.checkSession();
+    console.log("created nav");
+  },
+
+  computed: {
+    ...mapState({
+        isLoggedIn: state => state.isLoggedIn
+    })
+  },
+
   methods: {
+    // Checking everytime when page is loaded if user is logged in
+    async checkSession() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          return;
+        }
+        const response = await axios.get(`http://localhost:3000/api/check-session/${token}`, { withCredentials: true });
+        if (response.data.success) {
+          this.$store.dispatch('loginState');
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+
+    // ...mapActions(['logoutState']),
     async logout() {
       try {
         const token = localStorage.getItem('token');
-        console.log("Stored token from nav: ", token);
+        // console.log("Stored token from nav: ", token);
         if (!token) {
           this.$router.push({ path: './login' });
           return;
@@ -83,7 +120,9 @@ export default {
           console.error("Database deleting error,", error);
         }
         await localStorage.removeItem('token');
-        console.log("Should push to login now");
+        // this.logoutState();
+        this.$store.dispatch('logoutState');
+        // console.log("Should push to login now");
         this.$router.push({ path: './login' });
       } catch (error) {
         console.error(error);

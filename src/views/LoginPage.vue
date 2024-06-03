@@ -94,7 +94,7 @@
                     // this.loginState();
                     this.$store.dispatch('loginState');
                     this.loginMessage = "";
-                    this.$router.push('/');
+                    this.$router.push('/dashboard');
                   } else {
                     this.loginMessage = response.data.message;
                   }

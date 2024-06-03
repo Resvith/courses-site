@@ -104,3 +104,15 @@ app.delete('/api/logout/:token', async (req, res) => {
     // console.log("Database delete token failed: ", token);
   }
 });
+
+app.get('/api/courses', async (req, res) => {
+  try {
+      const client = await pgPool.connect();
+      const result = await client.query('SELECT course_id, creator_id, title, description, price, img FROM course');
+      client.release();
+      res.send(result.rows);
+  } catch (err) {
+      console.error('Error fetching courses:', err);
+      res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+});

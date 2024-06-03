@@ -1,9 +1,10 @@
 <template>
-  <button class="course-item" @click="navigateToCourse">
-    <img :src="image" alt="Course Image" class="course-image"/>
+  <button class="course-item" @click="navigateToCourse()">
+    <img :src="img" alt="Course Image" class="course-image"/>
     <h3 class="course-title">{{ title }}</h3>
     <p class="course-text"> {{ description }}</p>
-    <p class="course-price">Price: {{ formatPrice(price) }} zł</p>
+    <!-- <p class="course-price">Price: {{ formatPrice(price) }} zł</p> -->
+    <p class="course-price">Price: {{ price }}</p>
   </button>
 </template>
 
@@ -11,15 +12,11 @@
 export default {
   name: 'CourseItem',
   props: {
-    image: {
-      type: String,
-      required: true
-    },
     title: {
       type: String,
       required: true
     },
-    url: {
+    img: {
       type: String,
       required: true
     },
@@ -30,6 +27,10 @@ export default {
     },
     description: {
       type: String,
+      required: true
+    },
+    url: {
+      type: Number,
       required: true
     }
   },

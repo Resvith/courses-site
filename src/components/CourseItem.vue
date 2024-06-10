@@ -36,7 +36,7 @@ export default {
   },
   methods: {
     navigateToCourse() {
-      this.$router.push({ path: this.url });
+      this.$router.push({ path: "course/" + this.url });
     },
     formatPrice(price) {
       return price.toFixed(2);

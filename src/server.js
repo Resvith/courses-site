@@ -14,7 +14,7 @@ const { loginUser, isUsernameAvailable, isEmailAvailable, createUser, checkSessi
 
 app.use(cors({
   origin: 'http://localhost:8080', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
@@ -58,16 +58,16 @@ app.post('/api/register', async (req, res) => {
     const username = userData.username;
     const email = userData.email;
     const password = userData.password;
-    console.log("Password:", password);
+    // console.log("Password:", password);
     createUser(username, email, password);
     res.send(true);
   });
 
   app.get(`/api/check-session/:token`, async (req, res) => {
     const token = req.params.token;
-    console.log("Token on server: ", token);
+    // console.log("Token on server: ", token);
     const isTokenFound = await checkSession(token);
-    console.log("isTokenFound: ", isTokenFound)
+    // console.log("isTokenFound: ", isTokenFound)
     res.send({ success: isTokenFound });
 });
 
@@ -82,7 +82,7 @@ app.post('/api/login', async (req, res) => {
         res.status(500).send({ success: false, message: 'Session save failed' });
       } else {
         const token = jwt.sign({ userId: userData.username }, 'SECRET', { expiresIn: '1h' }); // Adjust expiration as needed
-        console.log('Session saved: ', req.sessionID);
+        // console.log('Session saved: ', req.sessionID);
         res.send({ success: true, token: req.sessionID });
       }
     });
@@ -114,5 +114,54 @@ app.get('/api/courses', async (req, res) => {
   } catch (err) {
       console.error('Error fetching courses:', err);
       res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+});
+
+app.get('/api/course/:id', async (req, res) => {
+  const courseId = req.params.id;
+  // console.log("Server course id: ", courseId);
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT course_id, creator_id, title, description, price, img FROM course WHERE course_id = $1', [courseId]);
+  client.release();
+  if (result.rowCount > 0) {
+    res.json(result.rows[0]);
+    // console.log("Server res json: ", result.rows[0]);
+  } else {
+    res.status(404).send({ message: 'Course not found' });
+  }
+});
+
+app.get('/api/modules/:courseId', async (req, res) => {
+  const courseId = req.params.courseId;
+  try {
+      const client = await pgPool.connect();
+      const result = await client.query('SELECT * FROM modules WHERE course_id = $1', [courseId]);
+      client.release();
+      if (result.rowCount > 0) {
+          res.json(result.rows);
+      } else {
+          res.status(404).send({ message: 'Modules not found for this course' });
+      }
+  } catch (err) {
+      console.error('Error fetching modules:', err);
+      res.status(500).send({ success: false, message: 'Error fetching modules' });
+  }
+});
+
+app.get('/api/lessons/:moduleId', async (req, res) => {
+  const moduleId = req.params.moduleId;
+  // console.log("In lessons module id: ", moduleId);
+  try {
+      const client = await pgPool.connect();
+      const result = await client.query('SELECT module_id, lesson_id, name, video_url, text_description FROM lesson WHERE module_id = $1', [moduleId]);
+      client.release();
+      if (result.rowCount > 0) {
+          res.json(result.rows);
+      } else {
+          res.status(404).send({ message: 'Lessons not found for this module' });
+      }
+  } catch (err) {
+      console.error('Error fetching lessons:', err);
+      res.status(500).send({ success: false, message: 'Error fetching lessons' });
   }
 });

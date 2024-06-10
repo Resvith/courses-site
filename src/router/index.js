@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "../views/HomePage.vue";
 import LoginPage from "@/views/LoginPage.vue";
 import RegisterPage from "@/views/RegisterPage.vue";
+import Dashboard from "@/views/DashboardPage.vue";
+import CourseOverview from "@/views/CourseOverviewPage.vue";
 
 const routes = [
     {
@@ -22,8 +24,13 @@ const routes = [
     {
         path: "/dashboard",
         name: "Dashboard",
-        component: () => import("../views/DashboardPage.vue"),
-    }
+        component: Dashboard,
+    },
+    {
+        path: '/course/:id',
+        name: 'CourseOverview',
+        component: CourseOverview
+      }
 ]
 
 const router = createRouter({

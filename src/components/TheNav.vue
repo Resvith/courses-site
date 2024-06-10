@@ -79,7 +79,6 @@ export default {
 
   created() {
     this.checkSession();
-    console.log("created nav");
   },
 
   computed: {

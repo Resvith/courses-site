@@ -4,7 +4,7 @@
     <h3 class="course-title">{{ title }}</h3>
     <p class="course-text"> {{ description }}</p>
     <!-- <p class="course-price">Price: {{ formatPrice(price) }} zł</p> -->
-    <p class="course-price">Price: {{ price }}</p>
+    <p v-if="price > 0 " class="course-price">Price: {{ price }} zł</p>
   </button>
 </template>
 

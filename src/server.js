@@ -165,3 +165,30 @@ app.get('/api/lessons/:moduleId', async (req, res) => {
       res.status(500).send({ success: false, message: 'Error fetching lessons' });
   }
 });
+
+app.get('/api/user-by-token/:token', async (req, res) => {
+  const token = req.params.token;
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT sid, sess FROM sessions WHERE sid=$1', [token]);
+  client.release();
+  if (result.rowCount > 0) {
+    // console.log("User by token: ", result.rows[0].sess.userId);
+    res.json(result.rows[0].sess.userId);
+  } else {
+    res.status(404).send({ message: 'User not found' });
+  }
+});
+
+app.get('/api/courses/:username', async (req, res) => { 
+  const username = req.params.username;
+  try {
+      const client = await pgPool.connect();
+      const result = await client.query('SELECT c.course_id, c.title, c.description, c.img FROM course c JOIN having_courses hc ON c.course_id = hc.course_id JOIN users u ON hc.user_id = u.user_id WHERE u.username = $1; ', [username]);
+      client.release();
+      console.log(result.rows);
+      res.json(result.rows);
+  } catch (err) {
+      console.error('Error fetching courses:', err);
+      res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+});

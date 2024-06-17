@@ -1,7 +1,10 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <router-link :to="{ path: './' }">
+      <router-link v-if="!isLoggedIn" :to="{ path: '/' }">
+        CourseCrafters
+      </router-link>
+      <router-link v-else :to="{ path: '/dashboard' }">
         CourseCrafters
       </router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,18 +51,18 @@
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
-        <router-link :to="{ path: './login' }">
+        <router-link :to="{ path: '/login' }">
           <button v-if="!isLoggedIn" class="btn btn-outline-primary ms-2 d-lg-none" type="button">Log In</button>
         </router-link>
-        <router-link :to="{ path: './register' }">
+        <router-link :to="{ path: '/register' }">
           <button v-if="!isLoggedIn" class="btn btn-primary ms-2 d-lg-none" type="button">Register</button>
         </router-link>
         <button v-if="isLoggedIn" class="btn btn-primary ms-2 d-lg-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
       </div>
-      <router-link :to="{ path: './login' }">
+      <router-link :to="{ path: '/login' }">
           <button v-if="!isLoggedIn" class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
       </router-link>
-      <router-link :to="{ path: './register' }">
+      <router-link :to="{ path: '/register' }">
         <button v-if="!isLoggedIn" class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
       </router-link>
       <button v-if="isLoggedIn" class="btn btn-outline-primary ms-2 d-none d-lg-inline-block" type="button" v-on:click="logout">Log Out</button> <!-- Just for testing -->
@@ -110,7 +113,7 @@ export default {
         const token = localStorage.getItem('token');
         // console.log("Stored token from nav: ", token);
         if (!token) {
-          this.$router.push({ path: './login' });
+          this.$router.push({ path: '/login' });
           return;
         }
         try {
@@ -122,7 +125,7 @@ export default {
         // this.logoutState();
         this.$store.dispatch('logoutState');
         // console.log("Should push to login now");
-        this.$router.push({ path: './login' });
+        this.$router.push({ path: '/login' });
       } catch (error) {
         console.error(error);
       }

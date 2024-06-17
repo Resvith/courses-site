@@ -1,4 +1,7 @@
 <template>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  </head>
   <div id="course_overview">
     <h1>{{ course.title }}</h1>
     <p>{{ course.description }}</p>
@@ -10,14 +13,17 @@
     <h2>Modules</h2>
     <div id="course-overview">
       <div v-for="module in course.modules" :key="module.id" class="mb-3">
-        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" :data-bs-target="'#module-' + module.id" aria-expanded="false" :aria-controls="'module-' + module.module_id">
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" :data-bs-target="'#module-' + module.id" aria-expanded="false" :aria-controls="'module-' + module.id">
           {{ module.title }}
         </button>
         <div :id="'module-' + module.id" class="collapse mt-2">
           <div class="card card-body">
             <ul>
               <li v-for="lesson in module.lessons" :key="lesson.lesson_id">
-                <a href="#" @click.prevent="openLesson(lesson)">{{ lesson.title }}</a>
+                <a v-if="isBought" href="#" @click.prevent="openLesson(lesson)">{{ lesson.title }}</a>
+                <a v-else class="disable-link">{{ lesson.title }}
+                  <i class="fas fa-lock"></i>
+                </a>
               </li>
             </ul>
           </div>
@@ -64,7 +70,8 @@
           title: '',
           description: '',
           video_url: ''
-        }
+        },
+        isBought: false,
       };
     },
     mounted() {
@@ -74,8 +81,22 @@
     created() {
       this.fetchCourseDetails();
       this.fetchModules(this.$route.params.id);
+      this.isCourseBought();
     },
     methods: {
+      async isCourseBought() {
+        const userToken = localStorage.getItem('token');
+        const courseId = this.$route.params.id;
+        await axios.get(`http://localhost:3000/api/is-course-bought/${userToken}/${courseId}`)
+          .then(response => {
+            this.isBought = response.data;
+          })
+          .catch(error => {
+            console.error('Error checking if course is bought:', error);
+          });
+        console.log("isBought:", this.isBought);
+      },
+
       openLesson(lesson) {
         this.selectedLesson = lesson;
         this.lessonModal.show();
@@ -103,6 +124,7 @@
             for (let i = 0; i < response.data.length; i++) {
                 const mod = response.data[i];
                 const lessons = await this.fetchLessons(mod.module_id);
+                // console.log("fetchModules modul id: ", mod.module_id)
                 // console.log("fetchModules lessons: ", lessons);
                 this.course.modules.push({id: mod.module_id, title: mod.name, lessons: lessons});
                 // console.log("Module:", mod);
@@ -170,5 +192,15 @@
   margin-top: 10px;
   padding: 0 15px;
   max-width: 100%;
+}
+
+.disable-link {
+    color: gray; /* Optional: style it to look disabled */
+    text-decoration: none; /* Optional: remove underline */
+    cursor: not-allowed; /* Optional: change the cursor to indicate it's not clickable */
+}
+
+li {
+  list-style: none
 }
   </style>

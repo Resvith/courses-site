@@ -192,3 +192,48 @@ app.get('/api/courses/:username', async (req, res) => {
       res.status(500).send({ success: false, message: 'Error fetching courses' });
   }
 });
+
+async function getUserIdFromToken(token) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT * FROM sessions WHERE sid=$1', [token]);
+  client.release();
+  if (result.rowCount > 0) {
+    const sess = result.rows[0].sess;
+    return sess.userId;
+  }
+  return null;
+}
+
+app.get('/api/is-course-bought/:token/:courseId', async (req, res) => {
+  const token = req.params.token;
+  const courseId = req.params.courseId;
+  try {
+    const client = await pgPool.connect();
+    const username = await getUserIdFromToken(token);
+    if (!username) {
+      return res.status(401).send({ success: false, message: 'Invalid token' });
+    }
+    // console.log("Is bought auth, username: ", username);
+    const userQueryResult = await client.query(
+      'SELECT user_id FROM users WHERE username = $1',
+      [username]);
+   
+    if (userQueryResult.rowCount === 0) {
+      throw new Error('User not found');
+    }
+    const userId = userQueryResult.rows[0].user_id;
+    const result = await client.query(
+      'SELECT * FROM having_courses WHERE user_id = $1 AND course_id = $2',
+      [userId, courseId]
+    );
+    client.release();
+    if (result.rowCount > 0) {
+      res.send(true);
+    } else {
+      res.send(false);
+    }
+  } catch (err) {
+    console.error('Error checking if course is bought:', err);
+    res.status(500).send({ success: false, message: 'Error checking if course is bought' });
+  }
+});

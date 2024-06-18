@@ -12,6 +12,8 @@
     "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\" \"npm run open-new-cmd\""
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
     "@popperjs/core": "^2.11.8",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",

@@ -1,4 +1,8 @@
 <template>
+        <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      />
   <div id="app">
     <the-nav></the-nav>
     <router-view></router-view>

@@ -237,3 +237,31 @@ app.get('/api/is-course-bought/:token/:courseId', async (req, res) => {
     res.status(500).send({ success: false, message: 'Error checking if course is bought' });
   }
 });
+
+async function getUserIdFromUsername(username) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT user_id FROM users WHERE username=$1', [username]);
+  client.release();
+  if (result.rowCount > 0) {
+    const user_id = result.rows[0].user_id;
+    // console.log("User id from getUserIdFromUsername: ", user_id)
+    return user_id;
+  }
+  return null;
+}
+
+app.get('/api/cart/:token', async (req, res) => {
+  username = await getUserIdFromToken(req.params.token);
+  user_id = await getUserIdFromUsername(username);
+
+  try {
+    const client = await pgPool.connect();
+    const result = await pgPool.query('SELECT c.course_id, c.title, c.description, c.img, c.price FROM course c JOIN cart ca ON c.course_id = ca.course_id JOIN users u ON ca.user_id = u.user_id WHERE u.user_id = $1; ', [user_id]);
+    client.release();
+    // console.log(result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching courses:', err);
+    res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+}); 

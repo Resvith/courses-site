@@ -265,3 +265,19 @@ app.get('/api/cart/:token', async (req, res) => {
     res.status(500).send({ success: false, message: 'Error fetching courses' });
   }
 }); 
+
+app.delete('/api/cart/:token/:courseId', async (req, res) => {
+  username = await getUserIdFromToken(req.params.token);
+  user_id = await getUserIdFromUsername(username);
+  course_id = req.params.courseId;
+
+  try {
+    const client = await pgPool.connect();
+    const result = await pgPool.query('DELETE FROM cart WHERE user_id = $1 AND course_id = $2; ', [user_id, course_id]);
+    client.release();
+    res.send(true);
+  } catch (err) {
+    console.error('Error fetching courses:', err);
+    res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+});

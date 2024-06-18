@@ -2,8 +2,9 @@
     <div class="product-card d-flex align-items-center" :id="id">
       <img :src="img" class="product-img" alt="Product Image">
       <div class="product-details d-flex flex-column flex-grow-1 mx-3">
+        <p class="product-title">{{ title }}</p>
         <p class="product-description">{{ description }}</p>
-        <p class="product-price">{{ price }}</p>
+        <p class="product-price">{{ price }} zł</p>
       </div>
       <button class="btn btn-danger btn-sm" @click="$emit('remove', id)">X</button>
     </div>
@@ -21,6 +22,10 @@
         type: String,
         required: true
       },
+        title: {
+            type: String,
+            required: true
+        },
       description: {
         type: String,
         required: true
@@ -52,6 +57,11 @@
   .product-details {
     flex-grow: 1;
     margin-left: 15px;
+  }
+  .product-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
   }
   .product-description {
     margin-bottom: 5px;

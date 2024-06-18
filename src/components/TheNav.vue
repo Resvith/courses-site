@@ -87,8 +87,8 @@
             </div>
           </div>
           <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-primary btn-sm" v-on:click="navigateTo('cart')">Go to Cart</button>
-            <button class="btn btn-success btn-sm" v-on:click="navigateTo('payment')">Go to Payment</button>
+            <button class="btn btn-primary btn-sm" v-on:click="navigateTo('cart')">Open Cart</button>
+            <button class="btn btn-success btn-sm" v-on:click="navigateTo('payment')">Checkout</button>
           </div>
         </div>
       </div>

@@ -7,10 +7,15 @@
           :key="product.id"
           :id="product.id"
           :img="product.img"
+          :title="product.title"
           :description="product.description"
           :price="product.price"
           @remove="removeProduct"
         />
+      </div>
+      <div v-if="products.length !== 0" class="my-4">
+        <h3>Total: {{ products.reduce((acc, product) => acc + product.price, 0) }} zł</h3>
+        <button class="btn btn-primary">Checkout</button>
       </div>
     </div>
   </template>
@@ -25,10 +30,7 @@
     },
     data() {
       return {
-        products: [
-          { id: 1, img: 'https://via.placeholder.com/150', description: 'Product 1', price: 100 },
-          { id: 2, img: 'https://via.placeholder.com/150', description: 'Product 2', price: 200 },
-        ]
+        products: []
       };
     },
 
@@ -50,7 +52,8 @@
                 this.products.push({
                 id: course.course_id,
                 img: course.img,
-                description: course.title,
+                title: course.title,
+                description: course.description,
                 price: course.price
                 });
             });

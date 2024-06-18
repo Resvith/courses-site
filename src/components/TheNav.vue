@@ -71,21 +71,32 @@
         <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="cartDropdown" style="width: 300px;">
           <div class="overflow-auto cart-items-container" style="max-height: 200px;">
             <!-- Example item in cart -->
-            <div 
-              v-for="item in cartItems" 
-              :key="item.id" 
+            <div
+              v-for="item in cartItems"
+              :key="item.id"
               class="d-flex justify-content-between align-items-center mb-2 cart-item"
               @click="navigateTo('/course/' + item.id)"
               style="cursor: pointer;"
             >
-              <div>
-                <small class="text-muted">{{ item.title }}</small>
+              <div style="margin-right: 10px;">
+                <img :src="item.img" alt="Course Image" style="width: 30px; height: 30px;">
               </div>
-              <div>
-                <span class="text-muted">{{ item.price }}</span>
+              <div style="flex: 1; overflow: hidden;">
+                <small class="text-muted text-truncate" style="max-width: 200px;">{{ item.title }}</small>
+              </div>
+              <div style="margin-left: 10px;">
+                <span class="text-muted">{{ item.price }} zł</span>
               </div>
             </div>
           </div>
+
+          <!-- SUMMARY -->
+          <div class="d-flex justify-content-between mt-3">
+            <span>Total:</span>
+            <span>{{ cartItems.reduce((acc, item) => acc + item.price, 0) }} zł</span>
+          </div>
+
+          <!-- BUTTONS -->
           <div class="d-flex justify-content-between mt-3">
             <button class="btn btn-primary btn-sm" v-on:click="navigateTo('cart')">Open Cart</button>
             <button class="btn btn-success btn-sm" v-on:click="navigateTo('payment')">Checkout</button>
@@ -117,29 +128,13 @@ export default {
 
   data() {
     return {
-      cartItems: [
-        { id: 1, title: 'Course 1', price: '$10' },
-        { id: 2, title: 'Course 2', price: '$20' },
-        { id: 3, title: 'Course 3', price: '$30' },
-        { id: 4, title: 'Course 1', price: '$10' },
-        { id: 5, title: 'Course 2', price: '$20' },
-        { id: 6, title: 'Course 3', price: '$30' },
-        { id: 7, title: 'Course 1', price: '$10' },
-        { id: 8, title: 'Course 2', price: '$20' },
-        { id: 9, title: 'Course 3', price: '$30' },
-        { id: 10, title: 'Course 1', price: '$10' },
-        { id: 12, title: 'Course 2', price: '$20' },
-        { id: 13, title: 'Course 3', price: '$30' },
-        { id: 14, title: 'Course 1', price: '$10' },
-        { id: 15, title: 'Course 2', price: '$20' },
-        { id: 16, title: 'Course 3', price: '$30' },
-
-      ],
+      cartItems: [],
     }
   },
 
   created() {
     this.checkSession();
+    this.loadCartItems();
   },
 
   computed: {
@@ -193,12 +188,24 @@ export default {
       }
     },
 
-    async openCart() {
-      console.log("Cart is opened");
-    },
-
     openUserOptions() {
       this.isUserOptionsOpen = !this.isUserOptionsOpen;
+    },
+
+    async loadCartItems(){
+      try {
+        const response = await axios.get(`http://localhost:3000/api/cart/${localStorage.getItem('token')}`);
+        response.data.forEach(course => {
+          this.cartItems.push({
+            id: course.course_id,
+            img: course.img,
+            title: course.title,
+            price: course.price
+          });
+        });
+      } catch (error) {
+        console.error(error);
+      }
     },
   }
 }
@@ -220,33 +227,33 @@ export default {
   margin-top: -5px;
 }
 
-/* .dropdown-menu {
-  right: 0;
-  left: auto;
-} */
-
   .cart-items-container {
-    padding-right: 10px; /* Dodaj margines, aby scroll nie nachodził na treść */
+    padding-right: 10px; 
   }
 
   .cart-item {
-    border-bottom: 1px solid lightgrey; /* Dodaj delikatne linie oddzielające kursy */
+    border-bottom: 1px solid lightgrey;
     padding-bottom: 4px;
   }
 
   .cart-item:last-child {
-    border-bottom: none; /* Usuń dolną granicę dla ostatniego elementu */
+    border-bottom: none; 
   }
 
   .dropdown-menu .dropdown-item:focus, 
   .dropdown-menu .dropdown-item:hover, 
   .dropdown-menu .dropdown-item:active {
-    background-color: #f8f9fa; /* Usuń efekt czarnych linii */
+    background-color: #f8f9fa;
     color: #000;
   }
 
-  /* Dodatkowe style na lepsze dostosowanie wyglądu */
   .dropdown-menu {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Dodaj delikatny cień dla lepszego efektu */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+
+  .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-      <h1 class="my-4">Cart Page</h1>
+      <h1 class="my-4">Your Cart</h1>
       <div class="product-container">
         <CartProduct
           v-for="product in products"
@@ -17,6 +17,10 @@
         <h3>Total: {{ products.reduce((acc, product) => acc + product.price, 0) }} zł</h3>
         <button class="btn btn-primary">Checkout</button>
       </div>
+      <div v-if="products.length === 0" class="my-4 cart-empty">
+        <h3>Your cart is empty</h3>
+        </div>  
+
       <!-- Modal -->
       <div
         class="modal fade"
@@ -125,5 +129,11 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .cart-empty {
+    text-align: center;
+    min-height: 60vh;
+    margin: auto;
   }
   </style>

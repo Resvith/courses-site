@@ -6,6 +6,8 @@ const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const jwt = require('jsonwebtoken');
 const pgPool = require('./api/database.js').pool;
+const bcrypt = require('bcrypt');
+
 const port = 3000;
 const cookieExpires = 30 * 24 * 60 * 60 * 1000; // 30 days
 const app = express();
@@ -364,5 +366,61 @@ app.post('/api/process-payment', async (req, res) => {
   } catch (error) {
     console.error('Error processing payment:', error);
     res.status(500).json({ success: false, message: 'Error processing payment' });
+  }
+});
+
+app.get('/api/user-profile/:token', async (req, res) => {
+  const token = req.params.token;
+  try {
+    const username = await getUserIdFromToken(token);
+    const client = await pgPool.connect();
+    const result = await client.query('SELECT username, user_type, email FROM users WHERE username = $1', [username]);
+    client.release();
+    if (result.rowCount > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).send({ message: 'User not found' });
+    }
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    res.status(500).send({ success: false, message: 'Error fetching user profile' });
+  }
+});
+
+app.post('/api/change-password', async (req, res) => {
+  const { token, currentPassword, newPassword } = req.body;
+  try {
+    const username = await getUserIdFromToken(token);
+    const client = await pgPool.connect();
+    const userResult = await client.query('SELECT password FROM users WHERE username = $1', [username]);
+    if (userResult.rowCount === 0) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+    const isPasswordCorrect = await bcrypt.compare(currentPassword, userResult.rows[0].password);
+    if (!isPasswordCorrect) {
+      return res.status(400).send({ message: 'Current password is incorrect' });
+    }
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await client.query('UPDATE users SET password = $1 WHERE username = $2', [hashedNewPassword, username]);
+    client.release();
+    res.send({ success: true, message: 'Password changed successfully' });
+  } catch (err) {
+    console.error('Error changing password:', err);
+    res.status(500).send({ success: false, message: 'Error changing password' });
+  }
+});
+
+app.delete('/api/delete-account/:token', async (req, res) => {
+  const token = req.params.token;
+  try {
+    const username = await getUserIdFromToken(token);
+    const client = await pgPool.connect();
+    await client.query('DELETE FROM users WHERE username = $1', [username]);
+    await client.query('DELETE FROM sessions WHERE sid = $1', [token]);
+    client.release();
+    res.send({ success: true, message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    res.status(500).send({ success: false, message: 'Error deleting account' });
   }
 });

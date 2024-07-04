@@ -6,6 +6,7 @@ import Dashboard from "@/views/DashboardPage.vue";
 import CourseOverview from "@/views/CourseOverviewPage.vue";
 import CartPage from "@/views/CartPage.vue";
 import CheckoutPage from "@/views/CheckoutPage.vue";
+import UserProfilePage from "@/views/UserProfilePage.vue";
 
 const routes = [
     {
@@ -42,6 +43,11 @@ const routes = [
         path: '/checkout',
         name: 'CheckoutPage',
         component: CheckoutPage
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: UserProfilePage
     }
 ]
 

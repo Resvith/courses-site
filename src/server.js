@@ -442,3 +442,21 @@ app.delete('/api/delete-account/:token', async (req, res) => {
     res.status(500).send({ success: false, message: 'Error deleting account' });
   }
 });
+
+app.get('/api/user-type/:token', async (req, res) => {
+  const token = req.params.token;
+  try {
+    const username = await getUserIdFromToken(token);
+    const client = await pgPool.connect();
+    const result = await client.query('SELECT user_type FROM users WHERE username = $1', [username]);
+    client.release();
+    if (result.rowCount > 0) {
+      res.json({ userType: result.rows[0].user_type });
+    } else {
+      res.status(404).send({ message: 'User not found' });
+    }
+  } catch (err) {
+    console.error('Error fetching user type:', err);
+    res.status(500).send({ success: false, message: 'Error fetching user type' });
+  }
+});

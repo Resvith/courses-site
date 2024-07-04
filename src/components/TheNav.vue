@@ -58,6 +58,8 @@
         <ul  class="dropdown-menu" aria-labelledby="userOptionsDropdown">
           <li><button class="dropdown-item" v-on:click="navigateTo('profile')">Profile</button></li>
           <li><button class="dropdown-item" v-on:click="navigateTo('settings')">Settings</button></li>
+          <li v-if="userType=='user'"><button class="dropdown-item" v-on:click="navigateTo('createCreator')">Become creator</button></li>
+          <li v-else><button class="dropdown-item" v-on:click="navigateTo('creatorPage')">Creator panel</button></li>
           <li><button class="dropdown-item" v-on:click="logout">Logout</button></li>
         </ul>
       </div>
@@ -189,10 +191,27 @@ export default {
         }
         const response = await axios.get(`http://localhost:3000/api/check-session/${token}`, { withCredentials: true });
         if (response.data.success) {
-          this.$store.dispatch('loginState');
+          await this.$store.dispatch('loginState');
+          if (this.$store.state.userType == null) {
+            await this.fetchUserType();
+          }
         }
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    async fetchUserType() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await axios.get(`http://localhost:3000/api/user-type/${token}`);
+        if (response.data.userType) {
+          this.$store.commit('setUserType', response.data.userType);
+        }
+      } catch (error) {
+        console.error('Error fetching user type:', error);
       }
     },
 

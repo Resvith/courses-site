@@ -4,23 +4,25 @@ const store = createStore({
   state() {
     return {
       isLoggedIn: false,
+      userType: null,
     };
   },
   mutations: {
     setLoggedIn(state, status) {
       state.isLoggedIn = status;
     },
+    setUserType(state, type) {
+      state.userType = type;
+    },
   },
   actions: {
-    loginState({ commit }) {
-      // Perform login logic here, then set the state
+    loginState({ commit }, userType) {
       commit('setLoggedIn', true);
-      console.log("Login state: true");
+      commit('setUserType', userType);
     },
     logoutState({ commit }) {
-      // Perform logout logic here, then unset the state
       commit('setLoggedIn', false);
-        console.log("Login state: false");
+      commit('setUserType', null);
     },
   }
 });

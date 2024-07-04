@@ -75,21 +75,39 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
   const userData = req.body;
-  const isLoggedOn = await loginUser(userData.username, userData.password);
-  if (isLoggedOn) {
-    req.session.userId = userData.username; // Assuming username is unique
-    req.session.save((err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send({ success: false, message: 'Session save failed' });
+  try {
+    const client = await pgPool.connect();
+    const result = await client.query('SELECT * FROM users WHERE username = $1', [userData.username]);
+    client.release();
+
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const isLoggedOn = await bcrypt.compare(userData.password, user.password);
+      if (isLoggedOn) {
+        req.session.userId = user.username;
+        req.session.userType = user.user_type; // Add this line
+        req.session.save((err) => {
+          if (err) {
+            console.error(err);
+            res.status(500).send({ success: false, message: 'Session save failed' });
+          } else {
+            const token = jwt.sign({ userId: user.username }, 'SECRET', { expiresIn: '1h' });
+            res.send({ 
+              success: true, 
+              token: req.sessionID,
+              userType: user.user_type // Include user type in response
+            });
+          }
+        });
       } else {
-        const token = jwt.sign({ userId: userData.username }, 'SECRET', { expiresIn: '1h' }); // Adjust expiration as needed
-        // console.log('Session saved: ', req.sessionID);
-        res.send({ success: true, token: req.sessionID });
+        res.send({ success: false, message: 'Invalid username or password' });
       }
-    });
-  } else {
-    res.send({ success: false, message: 'Invalid username or password' });
+    } else {
+      res.send({ success: false, message: 'Invalid username or password' });
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).send({ success: false, message: 'Internal server error' });
   }
 });
 

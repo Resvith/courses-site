@@ -139,7 +139,8 @@ export default {
 
   computed: {
     ...mapState({
-        isLoggedIn: state => state.isLoggedIn
+        isLoggedIn: state => state.isLoggedIn,
+        userType: state => state.userType
     })
   },
 

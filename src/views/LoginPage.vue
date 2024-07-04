@@ -88,11 +88,9 @@
             submitLogin() {
               axios.post('http://localhost:3000/api/login', this.userData)
                 .then(response => {
-                  // console.log("Is login correct:", response.data.success);
                   if(response.data.success) {
                     localStorage.setItem('token', response.data.token);
-                    // this.loginState();
-                    this.$store.dispatch('loginState');
+                    this.$store.dispatch('loginState', response.data.userType);
                     this.loginMessage = "";
                     this.$router.push('/dashboard');
                   } else {

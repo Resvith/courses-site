@@ -5,7 +5,7 @@
         <div class="card-body">
           <h5 class="card-title">Account Information</h5>
           <p><strong>Username:</strong> {{ username }}</p>
-          <p><strong>Account Type:</strong> {{ accountType }}</p>
+          <p><strong>Account Type:</strong> {{ userType }}</p>
           <p><strong>Email:</strong> {{ email }}</p>
           
           <a href="#" class="text-primary text-decoration-underline" @click.prevent="showChangePasswordModal">
@@ -52,7 +52,8 @@
   <script>
   import axios from 'axios';
   import { Modal } from 'bootstrap';
-  
+  import { mapState } from 'vuex';
+
   export default {
     name: 'UserProfilePage',
     data() {
@@ -65,6 +66,11 @@
         confirmPassword: '',
         changePasswordModal: null,
       };
+    },
+    computed: {
+      ...mapState({
+        userType: state => state.userType
+      })
     },
     created() {
       this.fetchUserData();

@@ -14,7 +14,7 @@
         />
       </div>
       <div v-if="products.length !== 0" class="my-4">
-        <h3>Total: {{ products.reduce((acc, product) => acc + product.price, 0) }} zł</h3>
+        <h3>Total: {{ products.reduce((acc, product) => acc + parseFloat(product.price), 0) }} zł</h3>
         <button class="btn btn-primary">Checkout</button>
       </div>
       <div v-if="products.length === 0" class="my-4 cart-empty">

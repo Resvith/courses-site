@@ -93,7 +93,7 @@
           <!-- SUMMARY -->
           <div class="d-flex justify-content-between mt-3">
             <span>Total:</span>
-            <span>{{ cartItems.reduce((acc, item) => acc + item.price, 0) }} zł</span>
+            <span>{{ cartItems.reduce((acc, item) => acc + parseFloat(item.price), 0).toFixed(2) }} zł</span>
           </div>
 
           <!-- BUTTONS -->
@@ -117,8 +117,9 @@
 
 <script>
 import axios from 'axios';
-// import { mapActions } from 'vuex';
 import { mapState } from 'vuex';
+import { cartUpdateEvent } from '@/eventBus.js';
+import { watch, onMounted, ref } from 'vue';
 
 
 export default {
@@ -128,7 +129,6 @@ export default {
 
   data() {
     return {
-      cartItems: [],
     }
   },
 
@@ -141,6 +141,37 @@ export default {
     ...mapState({
         isLoggedIn: state => state.isLoggedIn
     })
+  },
+
+  setup() {
+    const cartItems = ref([]);
+
+    const loadCartItems = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/api/cart/${localStorage.getItem('token')}`);
+        cartItems.value = response.data.map(course => ({
+          id: course.course_id,
+          img: course.img,
+          title: course.title,
+          price: course.price
+        }));
+      } catch (error) {
+        console.error('Error loading cart items:', error);
+      }
+    };
+
+    watch(cartUpdateEvent, () => {
+      loadCartItems();
+    });
+
+    onMounted(() => {
+      loadCartItems();
+    });
+
+    return {
+      cartItems,
+      loadCartItems
+    };
   },
 
   methods: {
@@ -192,21 +223,6 @@ export default {
       this.isUserOptionsOpen = !this.isUserOptionsOpen;
     },
 
-    async loadCartItems(){
-      try {
-        const response = await axios.get(`http://localhost:3000/api/cart/${localStorage.getItem('token')}`);
-        response.data.forEach(course => {
-          this.cartItems.push({
-            id: course.course_id,
-            img: course.img,
-            title: course.title,
-            price: course.price
-          });
-        });
-      } catch (error) {
-        console.error(error);
-      }
-    },
   }
 }
 </script>

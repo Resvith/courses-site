@@ -266,6 +266,30 @@ app.get('/api/cart/:token', async (req, res) => {
   }
 }); 
 
+app.get('/api/cart/:token/:courseId', async (req, res) => {
+  try {
+    const username = await getUserIdFromToken(req.params.token);
+    const user_id = await getUserIdFromUsername(username);
+    const course_id = req.params.courseId;
+
+    const client = await pgPool.connect();
+    const result = await client.query(
+      'SELECT c.course_id, c.title, c.description, c.img, c.price FROM course c JOIN cart ca ON c.course_id = ca.course_id JOIN users u ON ca.user_id = u.user_id WHERE u.user_id = $1 AND c.course_id = $2',
+      [user_id, course_id]
+    );
+    client.release();
+
+    if (result.rows.length > 0) {
+      res.status(200).json({ success: true, data: result.rows[0] });
+    } else {
+      res.status(200).json({ success: false, message: 'Course not in cart' });
+    }
+  } catch (err) {
+    console.error('Error checking if course is in cart:', err);
+    res.status(500).json({ success: false, message: 'Error checking if course is in cart' });
+  }
+});
+
 app.delete('/api/cart/:token/:courseId', async (req, res) => {
   username = await getUserIdFromToken(req.params.token);
   user_id = await getUserIdFromUsername(username);
@@ -275,9 +299,32 @@ app.delete('/api/cart/:token/:courseId', async (req, res) => {
     const client = await pgPool.connect();
     const result = await pgPool.query('DELETE FROM cart WHERE user_id = $1 AND course_id = $2; ', [user_id, course_id]);
     client.release();
-    res.send(true);
+    res.status(200).send({ success: true });
   } catch (err) {
     console.error('Error fetching courses:', err);
     res.status(500).send({ success: false, message: 'Error fetching courses' });
+  }
+});
+
+app.post('/api/cart/:token/:courseId', async (req, res) => {
+  const token = req.params.token;
+  const courseId = req.params.courseId;
+  
+  try {
+    const username = await getUserIdFromToken(token);
+    const userId = await getUserIdFromUsername(username);
+    
+    if (!userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    
+    const client = await pgPool.connect();
+    await client.query('INSERT INTO cart (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
+    client.release();
+    
+    res.status(200).send({ success: true });
+  } catch (err) {
+    console.error('Error adding course to cart:', err);
+    res.status(500).json({ success: false, message: 'Error adding course to cart' });
   }
 });

@@ -5,6 +5,19 @@
       <p>{{ course.description }}</p>
       <img :src="course.img_url" alt="Course Image" class="img-fluid rounded" />
     </div>
+    <div v-if="!isBought">
+      <h2 v-if="!isInCart">Price: ${{ course.price }}</h2>
+      <form v-if="!isInCart">
+        <button class="btn btn-primary" type="button" @click="addToCart">
+          Add to cart
+        </button>
+      </form>
+      <form v-else>
+        <button class="btn btn-danger" type="button" @click="removeFromCart">
+          Delete from cart
+        </button>
+      </form>
+    </div>
     <div v-if="course.modules.length" class="mt-4">
       <h2>Modules</h2>
       <div id="course-overview">
@@ -76,10 +89,10 @@
 <script>
 import axios from "axios";
 import { Modal, Collapse } from "bootstrap";
+import { emitCartUpdate } from '@/eventBus.js'
 export default {
   data() {
     return {
-      areModulesLoaded: false,
       course: {
         course_id: this.$route.params.id,
         creator_id: 0,
@@ -95,6 +108,8 @@ export default {
         video_url: "",
       },
       isBought: false,
+      isInCart: false,
+      areModulesLoaded: false,
       openModules: [],
     };
   },
@@ -105,8 +120,59 @@ export default {
     this.fetchCourseDetails();
     this.fetchModules(this.$route.params.id);
     this.isCourseBought();
+    this.checkIfInCart();
   },
   methods: {
+    async addToCart() {
+      try {
+        const token = localStorage.getItem('token');
+        const courseId = this.course.course_id;
+        const response = await axios.post(`http://localhost:3000/api/cart/${token}/${courseId}`);
+        
+        if (response.data.success) {
+          alert('Course added to cart successfully!');
+          emitCartUpdate(); // Emit the cart update event
+          this.isInCart = true;
+        } else {
+          alert('Failed to add course to cart. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error adding course to cart:', error);
+        alert('An error occurred while adding the course to cart.');
+      }
+    },
+
+    async removeFromCart() {
+      try {
+        const token = localStorage.getItem('token');
+        const courseId = this.course.course_id;
+        const response = await axios.delete(`http://localhost:3000/api/cart/${token}/${courseId}`);
+        
+        if (response.data.success) {
+          alert('Course removed from cart successfully!');
+          this.isInCart = false;
+          emitCartUpdate(); // Emit the cart update event
+        } else {
+          alert('Failed to remove course from cart. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error removing course from cart:', error);
+        alert('An error occurred while removing the course from cart.');
+      }
+    },
+
+    async checkIfInCart() {
+      try {
+        const token = localStorage.getItem('token');
+        const courseId = this.course.course_id;
+        const response = await axios.get(`http://localhost:3000/api/cart/${token}/${courseId}`);
+        this.isInCart = response.data.success;
+      } catch (error) {
+        console.error('Error checking if course is in cart:', error);
+        this.isInCart = false;
+      }
+    },
+
     async isCourseBought() {
       const userToken = localStorage.getItem("token");
       const courseId = this.$route.params.id;

@@ -328,3 +328,41 @@ app.post('/api/cart/:token/:courseId', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error adding course to cart' });
   }
 });
+
+app.post('/api/process-payment', async (req, res) => {
+  const { token, amount } = req.body;
+  
+  try {
+    const client = await pgPool.connect();
+    const sessionResult = await client.query('SELECT sess FROM sessions WHERE sid = $1', [token]);
+    if (sessionResult.rows.length === 0) {
+      throw new Error('Invalid session');
+    }
+    const username = sessionResult.rows[0].sess.userId;
+    
+    const userResult = await client.query('SELECT user_id FROM users WHERE username = $1', [username]);
+    if (userResult.rows.length === 0) {
+      throw new Error('User not found');
+    }
+    const userId = userResult.rows[0].user_id;
+    
+    const cartResult = await client.query('SELECT course_id FROM cart WHERE user_id = $1', [userId]);
+    const courseIds = cartResult.rows.map(row => row.course_id);
+    
+    await client.query('BEGIN');
+    
+    for (const courseId of courseIds) {
+      await client.query('INSERT INTO having_courses (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
+      await client.query('DELETE FROM cart WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
+    }
+    
+    await client.query('COMMIT');
+    
+    client.release();
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    res.status(500).json({ success: false, message: 'Error processing payment' });
+  }
+});

@@ -5,6 +5,7 @@ import RegisterPage from "@/views/RegisterPage.vue";
 import Dashboard from "@/views/DashboardPage.vue";
 import CourseOverview from "@/views/CourseOverviewPage.vue";
 import CartPage from "@/views/CartPage.vue";
+import CheckoutPage from "@/views/CheckoutPage.vue";
 
 const routes = [
     {
@@ -36,6 +37,11 @@ const routes = [
         path: '/cart',
         name: 'CartPage',
         component: CartPage
+    },
+    {
+        path: '/checkout',
+        name: 'CheckoutPage',
+        component: CheckoutPage
     }
 ]
 

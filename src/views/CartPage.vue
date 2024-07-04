@@ -15,7 +15,7 @@
       </div>
       <div v-if="products.length !== 0" class="my-4">
         <h3>Total: {{ products.reduce((acc, product) => acc + parseFloat(product.price), 0) }} zł</h3>
-        <button class="btn btn-primary">Checkout</button>
+        <button @click="$router.push('/checkout')" class="btn btn-primary">Checkout</button>
       </div>
       <div v-if="products.length === 0" class="my-4 cart-empty">
         <h3>Your cart is empty</h3>
@@ -68,6 +68,7 @@
 import axios from 'axios';
 import CartProduct from '@/components/CartProduct.vue';
 import { Modal } from 'bootstrap';
+import { emitCartUpdate } from '@/eventBus.js'
 
 export default {
   components: {
@@ -97,6 +98,7 @@ export default {
           product => product.id !== this.productIdToDelete,
         );
         await axios.delete(`http://localhost:3000/api/cart/${localStorage.getItem('token')}/${this.productIdToDelete}`);
+        emitCartUpdate();
         this.productIdToDelete = null;
         this.confirmationModalInstance.hide();
       }

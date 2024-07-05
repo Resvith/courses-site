@@ -75,13 +75,14 @@
       };
     },
     created() {
-      //this.fetchCreatorStatistics();
+      this.fetchCreatorStatistics();
       this.fetchCreatedCourses();
     },
     methods: {
       async fetchCreatorStatistics() {
         try {
-          const response = await axios.get('http://localhost:3000/api/creator-statistics');
+            const token = localStorage.getItem('token');
+          const response = await axios.get(`http://localhost:3000/api/creator-statistics/${token}`);
           this.statistics = response.data;
         } catch (error) {
           console.error('Error fetching creator statistics:', error);

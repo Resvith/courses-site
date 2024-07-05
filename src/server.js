@@ -36,9 +36,9 @@ app.use(session({
 }));
 
 async function getCreatorIdFromToken(token) {
-  console.log('Getting creator ID for token:', token);
+  // console.log('Getting creator ID for token:', token);
   const username = await getUsernameFromToken(token);
-  console.log('Username from token:', username);
+  // console.log('Username from token:', username);
   if (!username) return null;
 
   let client;
@@ -51,7 +51,7 @@ async function getCreatorIdFromToken(token) {
       return null;
     }
     const user_id = await userResult.rows[0].user_id;
-    console.log("user id", user_id);
+    // console.log("user id", user_id);
 
     const creatorQuery = 'SELECT creator_id FROM creator_info WHERE user_id = $1';
     const creatorResult = await client.query(creatorQuery, [user_id]);
@@ -286,7 +286,7 @@ app.get('/api/courses/:username', async (req, res) => {
       const client = await pgPool.connect();
       const result = await client.query('SELECT c.course_id, c.title, c.description, c.img FROM course c JOIN having_courses hc ON c.course_id = hc.course_id JOIN users u ON hc.user_id = u.user_id WHERE u.username = $1 AND c.status = $2; ', [username, status]);
       client.release();
-      console.log(result.rows);
+      // console.log(result.rows);
       res.json(result.rows);
   } catch (err) {
       console.error('Error fetching courses:', err);
@@ -584,18 +584,18 @@ app.post('/api/become-creator', async (req, res) => {
 });
 
 app.get('/api/creator-courses/:token', async (req, res) => {
-  console.log('Received request for creator courses');
+  // console.log('Received request for creator courses');
   const token = req.params.token;
   const status = 'active';
-  console.log('Token:', token);
+  // console.log('Token:', token);
 
   let client;
   try {
     const creatorId = await getCreatorIdFromToken(token);
-    console.log('Creator ID:', creatorId);
+    // console.log('Creator ID:', creatorId);
 
     if (!creatorId) {
-      console.log('Unauthorized or not a creator');
+      // console.log('Unauthorized or not a creator');
       return res.status(401).json({ error: 'Unauthorized or not a creator' });
     }
 
@@ -606,7 +606,7 @@ app.get('/api/creator-courses/:token', async (req, res) => {
       WHERE creator_id = $1 AND status = $2
     `;
     const coursesResult = await client.query(coursesQuery, [creatorId, status]);
-    console.log('Courses found:', coursesResult.rows.length);
+    // console.log('Courses found:', coursesResult.rows.length);
 
     res.json(coursesResult.rows);
   } catch (error) {
@@ -676,4 +676,42 @@ app.get('/api/creator-id/:token', async (req, res) => {
     return res.status(401).send({ success: false, error: 'Unauthorized' });
   }
   return res.status(200).send({ success: true, creatorId });
+});
+
+app.get('/api/creator-statistics/:token', async (req, res) => {
+  const token = req.params.token;
+  
+  try {
+    const client = await pgPool.connect();
+
+    // Get creator_id from token
+    const creatorId = await getCreatorIdFromToken(token);
+    // console.log('Creator ID (statistics):', creatorId);
+    // Fetch statistics
+    const statisticsQuery = `
+      SELECT 
+        COUNT(DISTINCT cp.course_id) as courses_sold,
+        COALESCE(SUM(cp.creator_revenue), 0) as total_earnings,
+        (SELECT balance FROM creator_info WHERE creator_id = $1) as available_to_withdraw
+      FROM course_purchases cp
+      JOIN course c ON cp.course_id = c.course_id
+      WHERE c.creator_id = $1
+    `;
+
+    const statisticsResult = await client.query(statisticsQuery, [creatorId]);
+    const statistics = statisticsResult.rows[0];
+    // console.log('Statistics:', statistics)
+
+    client.release();
+
+    res.json({
+      coursesSold: parseInt(statistics.courses_sold) || 0,
+      totalEarnings: parseFloat(statistics.total_earnings) || 0,
+      availableToWithdraw: parseFloat(statistics.available_to_withdraw) || 0,
+    });
+
+  } catch (error) {
+    console.error('Error fetching creator statistics:', error);
+    res.status(500).json({ error: 'Error fetching creator statistics' });
+  }
 });

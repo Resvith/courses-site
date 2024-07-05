@@ -35,6 +35,85 @@ app.use(session({
   cookie: { secure: false, maxAge: cookieExpires } // 30 days
 }));
 
+async function getCreatorIdFromToken(token) {
+  console.log('Getting creator ID for token:', token);
+  const username = await getUsernameFromToken(token);
+  console.log('Username from token:', username);
+  if (!username) return null;
+
+  let client;
+  try {
+    client = await pgPool.connect();
+    const userQuery = 'SELECT user_id FROM users WHERE username = $1';
+    const userResult = await client.query(userQuery, [username]);
+    if (userResult.rows.length === 0) {
+      console.log('User not found');
+      return null;
+    }
+    const user_id = await userResult.rows[0].user_id;
+    console.log("user id", user_id);
+
+    const creatorQuery = 'SELECT creator_id FROM creator_info WHERE user_id = $1';
+    const creatorResult = await client.query(creatorQuery, [user_id]);
+    client.release();
+    if (creatorResult.rows.length === 0) {
+      console.log('Creator not found');
+      return null;
+    }
+    return creatorResult.rows[0].creator_id;
+
+  } catch (error) {
+    console.error('Error in getCreatorIdFromToken:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+    return null;
+  }
+};
+
+
+async function getUserIdFromUsername(username) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT user_id FROM users WHERE username=$1', [username]);
+  client.release();
+  if (result.rowCount > 0) {
+    const user_id = result.rows[0].user_id;
+    // console.log("User id from getUserIdFromUsername: ", user_id)
+    return user_id;
+  }
+  return null;
+};
+
+
+async function getUsernameFromToken(token) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT * FROM sessions WHERE sid=$1', [token]);
+  client.release();
+  if (result.rowCount > 0) {
+    const sess = result.rows[0].sess;
+    return sess.userId;
+  }
+  return null;
+};
+
+async function getUserTypeFromUserId(userId) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT user_type FROM users WHERE user_id=$1', [userId]);
+  client.release();
+  if (result.rowCount > 0) {
+    return result.rows[0].user_type;
+  }
+  return null;
+};
+
+async function getCourseCreatorId(courseId) {
+  const client = await pgPool.connect();
+  const result = await client.query('SELECT creator_id FROM course WHERE course_id=$1', [courseId]);
+  client.release();
+  if (result.rowCount > 0) {
+    return result.rows[0].creator_id;
+  }
+  return null;
+};
+
 app.get('/', (req, res) => {
     res.send('Hello from Node.js!');
 });
@@ -127,8 +206,9 @@ app.delete('/api/logout/:token', async (req, res) => {
 
 app.get('/api/courses', async (req, res) => {
   try {
+      const status = 'active';
       const client = await pgPool.connect();
-      const result = await client.query('SELECT course_id, creator_id, title, description, price, img FROM course');
+      const result = await client.query('SELECT course_id, creator_id, title, description, price, img FROM course WHERE status = $1', [status]);
       client.release();
       res.send(result.rows);
   } catch (err) {
@@ -201,9 +281,10 @@ app.get('/api/user-by-token/:token', async (req, res) => {
 
 app.get('/api/courses/:username', async (req, res) => { 
   const username = req.params.username;
+  const status = 'active';
   try {
       const client = await pgPool.connect();
-      const result = await client.query('SELECT c.course_id, c.title, c.description, c.img FROM course c JOIN having_courses hc ON c.course_id = hc.course_id JOIN users u ON hc.user_id = u.user_id WHERE u.username = $1; ', [username]);
+      const result = await client.query('SELECT c.course_id, c.title, c.description, c.img FROM course c JOIN having_courses hc ON c.course_id = hc.course_id JOIN users u ON hc.user_id = u.user_id WHERE u.username = $1 AND c.status = $2; ', [username, status]);
       client.release();
       console.log(result.rows);
       res.json(result.rows);
@@ -212,17 +293,6 @@ app.get('/api/courses/:username', async (req, res) => {
       res.status(500).send({ success: false, message: 'Error fetching courses' });
   }
 });
-
-async function getUsernameFromToken(token) {
-  const client = await pgPool.connect();
-  const result = await client.query('SELECT * FROM sessions WHERE sid=$1', [token]);
-  client.release();
-  if (result.rowCount > 0) {
-    const sess = result.rows[0].sess;
-    return sess.userId;
-  }
-  return null;
-}
 
 app.get('/api/is-course-bought/:token/:courseId', async (req, res) => {
   const token = req.params.token;
@@ -257,18 +327,6 @@ app.get('/api/is-course-bought/:token/:courseId', async (req, res) => {
     res.status(500).send({ success: false, message: 'Error checking if course is bought' });
   }
 });
-
-async function getUserIdFromUsername(username) {
-  const client = await pgPool.connect();
-  const result = await client.query('SELECT user_id FROM users WHERE username=$1', [username]);
-  client.release();
-  if (result.rowCount > 0) {
-    const user_id = result.rows[0].user_id;
-    // console.log("User id from getUserIdFromUsername: ", user_id)
-    return user_id;
-  }
-  return null;
-}
 
 app.get('/api/cart/:token', async (req, res) => {
   username = await getUsernameFromToken(req.params.token);
@@ -502,43 +560,10 @@ app.post('/api/become-creator', async (req, res) => {
   }
 });
 
-async function getCreatorIdFromToken(token) {
-  console.log('Getting creator ID for token:', token);
-  const username = await getUsernameFromToken(token);
-  console.log('Username from token:', username);
-  if (!username) return null;
-
-  let client;
-  try {
-    client = await pgPool.connect();
-    const userQuery = 'SELECT user_id FROM users WHERE username = $1';
-    const userResult = await client.query(userQuery, [username]);
-    if (userResult.rows.length === 0) {
-      console.log('User not found');
-      return null;
-    }
-    const user_id = await userResult.rows[0].user_id;
-    console.log("user id", user_id);
-
-    const creatorQuery = 'SELECT creator_id FROM creator_info WHERE user_id = $1';
-    const creatorResult = await client.query(creatorQuery, [user_id]);
-    client.release();
-    if (creatorResult.rows.length === 0) {
-      console.log('Creator not found');
-      return null;
-    }
-    return creatorResult.rows[0].creator_id;
-
-  } catch (error) {
-    console.error('Error in getCreatorIdFromToken:', error);
-    res.status(500).json({ success: false, error: 'Internal server error' });
-    return null;
-  }
-};
-
 app.get('/api/creator-courses/:token', async (req, res) => {
   console.log('Received request for creator courses');
   const token = req.params.token;
+  const status = 'active';
   console.log('Token:', token);
 
   let client;
@@ -555,9 +580,9 @@ app.get('/api/creator-courses/:token', async (req, res) => {
     const coursesQuery = `
       SELECT course_id, title, description, price, img
       FROM course
-      WHERE creator_id = $1
+      WHERE creator_id = $1 AND status = $2
     `;
-    const coursesResult = await client.query(coursesQuery, [creatorId]);
+    const coursesResult = await client.query(coursesQuery, [creatorId, status]);
     console.log('Courses found:', coursesResult.rows.length);
 
     res.json(coursesResult.rows);
@@ -566,5 +591,57 @@ app.get('/api/creator-courses/:token', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   } finally {
     if (client) client.release();
+  }
+});
+
+app.delete('/api/courses/:token/:courseId', async (req, res) => {
+  const token = req.params.token;
+  const courseId = req.params.courseId;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  try {
+    const username = await getUsernameFromToken(token);
+    const userId = await getUserIdFromUsername(username);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    // Check if the user is an admin or the creator of the course
+    const userType = await getUserTypeFromUserId(userId);
+    if (userType !== 'admin') {
+      const creatorId = await getCreatorIdFromToken(token);
+      const courseCreatorId = await getCourseCreatorId(courseId);
+      if (creatorId !== courseCreatorId) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+    }
+
+    // Start transaction
+    const client = await pgPool.connect();
+    await client.query('BEGIN');
+
+    try {
+      // Delete redundant data from other tables
+      //await client.query('DELETE FROM modules WHERE course_id = $1', [courseId]);
+
+      // Setting course status to 'deleted' instead of actually deleting it
+      await client.query('UPDATE course SET status = $1 WHERE course_id = $2', ['deleted', courseId]);
+
+      await client.query('COMMIT');
+
+      res.json({ success: true, message: 'Course deleted successfully' });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

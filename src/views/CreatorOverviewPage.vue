@@ -42,7 +42,7 @@
       <div class="courses-section">
         <h2>Your Courses</h2>
         <div class="course-list">
-          <div v-for="course in createdCourses" :key="course.id" class="course-item">
+          <div v-for="course in createdCourses" :key="course.course_id" class="course-item">
             <img :src="course.img" :alt="course.title" class="course-image">
             <div class="course-details">
               <h3>{{ course.title }}</h3>
@@ -50,8 +50,8 @@
               <p>Price: ${{ course.price }}</p>
             </div>
             <div class="course-actions">
-              <button class="btn btn-secondary" @click="editCourse(course.id)">Edit</button>
-              <button class="btn btn-danger" @click="deleteCourse(course.id)">Delete</button>
+              <button class="btn btn-secondary" @click="editCourse(course.course_id)">Edit</button>
+              <button class="btn btn-danger" @click="deleteCourse(course.course_id)">Delete</button>
             </div>
           </div>
         </div>
@@ -107,8 +107,9 @@
       async deleteCourse(courseId) {
         if (confirm('Are you sure you want to delete this course?')) {
           try {
-            await axios.delete(`http://localhost:3000/api/courses/${courseId}`);
-            this.createdCourses = this.createdCourses.filter(course => course.id !== courseId);
+            const token = localStorage.getItem('token');  
+            await axios.delete(`http://localhost:3000/api/courses/${token}/${courseId}`);
+            this.createdCourses = this.createdCourses.filter(course => course.course_id !== courseId);
           } catch (error) {
             console.error('Error deleting course:', error);
           }

@@ -8,6 +8,7 @@ import CartPage from "@/views/CartPage.vue";
 import CheckoutPage from "@/views/CheckoutPage.vue";
 import UserProfilePage from "@/views/UserProfilePage.vue";
 import BecomeCreatorPage from "@/views/BecomeCreatorPage.vue";
+import CreatorOverviewPage from "@/views/CreatorOverviewPage.vue";
 
 const routes = [
     {
@@ -54,6 +55,11 @@ const routes = [
         path: '/become-creator',
         name: 'BecomeCreator',
         component: BecomeCreatorPage
+    },
+    {
+        path: '/creator/:id',
+        name: 'CreatorOverview',
+        component: CreatorOverviewPage
     }
     
 ]

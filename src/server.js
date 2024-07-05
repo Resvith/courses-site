@@ -213,7 +213,7 @@ app.get('/api/courses/:username', async (req, res) => {
   }
 });
 
-async function getUserIdFromToken(token) {
+async function getUsernameFromToken(token) {
   const client = await pgPool.connect();
   const result = await client.query('SELECT * FROM sessions WHERE sid=$1', [token]);
   client.release();
@@ -229,7 +229,7 @@ app.get('/api/is-course-bought/:token/:courseId', async (req, res) => {
   const courseId = req.params.courseId;
   try {
     const client = await pgPool.connect();
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     if (!username) {
       return res.status(401).send({ success: false, message: 'Invalid token' });
     }
@@ -271,7 +271,7 @@ async function getUserIdFromUsername(username) {
 }
 
 app.get('/api/cart/:token', async (req, res) => {
-  username = await getUserIdFromToken(req.params.token);
+  username = await getUsernameFromToken(req.params.token);
   user_id = await getUserIdFromUsername(username);
 
   try {
@@ -288,7 +288,7 @@ app.get('/api/cart/:token', async (req, res) => {
 
 app.get('/api/cart/:token/:courseId', async (req, res) => {
   try {
-    const username = await getUserIdFromToken(req.params.token);
+    const username = await getUsernameFromToken(req.params.token);
     const user_id = await getUserIdFromUsername(username);
     const course_id = req.params.courseId;
 
@@ -311,7 +311,7 @@ app.get('/api/cart/:token/:courseId', async (req, res) => {
 });
 
 app.delete('/api/cart/:token/:courseId', async (req, res) => {
-  username = await getUserIdFromToken(req.params.token);
+  username = await getUsernameFromToken(req.params.token);
   user_id = await getUserIdFromUsername(username);
   course_id = req.params.courseId;
 
@@ -331,7 +331,7 @@ app.post('/api/cart/:token/:courseId', async (req, res) => {
   const courseId = req.params.courseId;
   
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     const userId = await getUserIdFromUsername(username);
     
     if (!userId) {
@@ -390,7 +390,7 @@ app.post('/api/process-payment', async (req, res) => {
 app.get('/api/user-profile/:token', async (req, res) => {
   const token = req.params.token;
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     const client = await pgPool.connect();
     const result = await client.query('SELECT username, user_type, email FROM users WHERE username = $1', [username]);
     client.release();
@@ -408,7 +408,7 @@ app.get('/api/user-profile/:token', async (req, res) => {
 app.post('/api/change-password', async (req, res) => {
   const { token, currentPassword, newPassword } = req.body;
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     const client = await pgPool.connect();
     const userResult = await client.query('SELECT password FROM users WHERE username = $1', [username]);
     if (userResult.rowCount === 0) {
@@ -431,7 +431,7 @@ app.post('/api/change-password', async (req, res) => {
 app.delete('/api/delete-account/:token', async (req, res) => {
   const token = req.params.token;
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     const client = await pgPool.connect();
     await client.query('DELETE FROM users WHERE username = $1', [username]);
     await client.query('DELETE FROM sessions WHERE sid = $1', [token]);
@@ -446,7 +446,7 @@ app.delete('/api/delete-account/:token', async (req, res) => {
 app.get('/api/user-type/:token', async (req, res) => {
   const token = req.params.token;
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     const client = await pgPool.connect();
     const result = await client.query('SELECT user_type FROM users WHERE username = $1', [username]);
     client.release();
@@ -464,7 +464,7 @@ app.get('/api/user-type/:token', async (req, res) => {
 app.post('/api/become-creator', async (req, res) => {
   const { token, ...creatorData } = req.body;
   try {
-    const username = await getUserIdFromToken(token);
+    const username = await getUsernameFromToken(token);
     if (!username) {
       return res.status(401).json({ success: false, message: 'Invalid token' });
     }
@@ -499,5 +499,72 @@ app.post('/api/become-creator', async (req, res) => {
   } catch (error) {
     console.error('Error upgrading account:', error);
     res.status(500).json({ success: false, message: 'Error upgrading account' });
+  }
+});
+
+async function getCreatorIdFromToken(token) {
+  console.log('Getting creator ID for token:', token);
+  const username = await getUsernameFromToken(token);
+  console.log('Username from token:', username);
+  if (!username) return null;
+
+  let client;
+  try {
+    client = await pgPool.connect();
+    const userQuery = 'SELECT user_id FROM users WHERE username = $1';
+    const userResult = await client.query(userQuery, [username]);
+    if (userResult.rows.length === 0) {
+      console.log('User not found');
+      return null;
+    }
+    const user_id = await userResult.rows[0].user_id;
+    console.log("user id", user_id);
+
+    const creatorQuery = 'SELECT creator_id FROM creator_info WHERE user_id = $1';
+    const creatorResult = await client.query(creatorQuery, [user_id]);
+    client.release();
+    if (creatorResult.rows.length === 0) {
+      console.log('Creator not found');
+      return null;
+    }
+    return creatorResult.rows[0].creator_id;
+
+  } catch (error) {
+    console.error('Error in getCreatorIdFromToken:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+    return null;
+  }
+};
+
+app.get('/api/creator-courses/:token', async (req, res) => {
+  console.log('Received request for creator courses');
+  const token = req.params.token;
+  console.log('Token:', token);
+
+  let client;
+  try {
+    const creatorId = await getCreatorIdFromToken(token);
+    console.log('Creator ID:', creatorId);
+
+    if (!creatorId) {
+      console.log('Unauthorized or not a creator');
+      return res.status(401).json({ error: 'Unauthorized or not a creator' });
+    }
+
+    client = await pgPool.connect();
+    const coursesQuery = `
+      SELECT course_id, title, description, price, img
+      FROM course
+      WHERE creator_id = $1
+    `;
+    const coursesResult = await client.query(coursesQuery, [creatorId]);
+    console.log('Courses found:', coursesResult.rows.length);
+
+    res.json(coursesResult.rows);
+  } catch (error) {
+    console.error('Error fetching creator courses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    if (client) client.release();
   }
 });

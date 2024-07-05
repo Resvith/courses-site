@@ -645,3 +645,12 @@ app.delete('/api/courses/:token/:courseId', async (req, res) => {
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
+
+app.get('/api/creator-id/:token', async (req, res) => {
+  const token = req.params.token;
+  const creatorId = await getCreatorIdFromToken(token);
+  if (!creatorId) {
+    return res.status(401).send({ success: false, error: 'Unauthorized' });
+  }
+  return res.status(200).send({ success: true, creatorId });
+});

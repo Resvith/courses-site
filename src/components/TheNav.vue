@@ -59,7 +59,7 @@
           <li><button class="dropdown-item" v-on:click="navigateTo('profile')">Profile</button></li>
           <li><button class="dropdown-item" v-on:click="navigateTo('settings')">Settings</button></li>
           <li v-if="userType=='user'"><button class="dropdown-item" v-on:click="navigateTo('become-creator')">Become creator</button></li>
-          <li v-else><button class="dropdown-item" v-on:click="navigateTo('creatoroverview')">Creator panel</button></li>
+          <li v-else><button class="dropdown-item" v-on:click="navigateTo(`creator/${creatorId}`)">Creator panel</button></li>
           <li><button class="dropdown-item" v-on:click="logout">Logout</button></li>
         </ul>
       </div>
@@ -131,6 +131,7 @@ export default {
 
   data() {
     return {
+      creatorId: null,
     }
   },
 
@@ -195,9 +196,27 @@ export default {
           if (this.$store.state.userType == null) {
             await this.fetchUserType();
           }
+          if (this.$store.state.userType !== 'user') {
+            await this.fetchCreatorId();
+          }
         }
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    async fetchCreatorId() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await axios.get(`http://localhost:3000/api/creator-id/${token}`);
+        if (response.data.creatorId) {
+          this.creatorId = response.data.creatorId;
+          console.log('Creator ID:', this.creatorId)
+        }
+      } catch (error) {
+        console.error('Error fetching creator id:', error);
       }
     },
 

@@ -755,3 +755,136 @@ app.post('/api/withdraw/:token/:amount', async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+app.put('/api/update-course/:token/:courseId', async (req, res) => {
+  const token = req.params.token;
+  const courseId = req.params.courseId;
+  const updatedCourse = req.body.course;
+
+  try {
+    // Verify the token and get the creator ID
+    const creatorId = await getCreatorIdFromToken(token);
+    if (!creatorId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Start a transaction
+    const client = await pgPool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Update course details
+      const updateCourseQuery = `
+        UPDATE course 
+        SET title = $1, description = $2, price = $3, img = $4
+        WHERE course_id = $5 AND creator_id = $6
+        RETURNING course_id`;
+      const courseResult = await client.query(updateCourseQuery, [
+        updatedCourse.title,
+        updatedCourse.description,
+        updatedCourse.price,
+        updatedCourse.img_url,
+        courseId,
+        creatorId
+      ]);
+
+      if (courseResult.rows.length === 0) {
+        throw new Error('Course not found or user not authorized');
+      }
+
+      // Delete existing modules and lessons
+      await client.query('DELETE FROM lesson WHERE module_id IN (SELECT module_id FROM modules WHERE course_id = $1)', [courseId]);
+      await client.query('DELETE FROM modules WHERE course_id = $1', [courseId]);
+
+      // Insert updated modules and lessons
+      for (const module of updatedCourse.modules) {
+        const moduleQuery = `
+          INSERT INTO modules (course_id, name)
+          VALUES ($1, $2)
+          RETURNING module_id`;
+        const moduleResult = await client.query(moduleQuery, [courseId, module.title]);
+        const moduleId = moduleResult.rows[0].module_id;
+
+        for (const lesson of module.lessons) {
+          const lessonQuery = `
+            INSERT INTO lesson (module_id, name, video_url, text_description)
+            VALUES ($1, $2, $3, $4)`;
+          await client.query(lessonQuery, [moduleId, lesson.title, lesson.video_url, lesson.description]);
+        }
+      }
+
+      await client.query('COMMIT');
+      res.json({ success: true, message: 'Course updated successfully' });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error updating course:', error);
+    res.status(500).json({ success: false, message: 'Error updating course' });
+  }
+});
+
+app.post('/api/create-course/:token', async (req, res) => {
+  const token = req.params.token;
+  const newCourse = req.body.course;
+
+  try {
+    // Verify the token and get the creator ID
+    const creatorId = await getCreatorIdFromToken(token);
+    if (!creatorId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // Start a transaction
+    const client = await pgPool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Insert new course
+      const insertCourseQuery = `
+        INSERT INTO course (creator_id, title, description, price, img, status)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING course_id`;
+      const courseResult = await client.query(insertCourseQuery, [
+        creatorId,
+        newCourse.title,
+        newCourse.description,
+        newCourse.price,
+        newCourse.img_url,
+        'active' // Assuming new courses are set to active by default
+      ]);
+      const courseId = courseResult.rows[0].course_id;
+
+      // Insert modules and lessons
+      for (const module of newCourse.modules) {
+        const moduleQuery = `
+          INSERT INTO modules (course_id, name)
+          VALUES ($1, $2)
+          RETURNING module_id`;
+        const moduleResult = await client.query(moduleQuery, [courseId, module.title]);
+        const moduleId = moduleResult.rows[0].module_id;
+
+        for (const lesson of module.lessons) {
+          const lessonQuery = `
+            INSERT INTO lesson (module_id, name, video_url, text_description)
+            VALUES ($1, $2, $3, $4)`;
+          await client.query(lessonQuery, [moduleId, lesson.title, lesson.video_url, lesson.description]);
+        }
+      }
+
+      await client.query('COMMIT');
+      res.json({ success: true, message: 'Course created successfully', courseId: courseId });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error creating course:', error);
+    res.status(500).json({ success: false, message: 'Error creating course' });
+  }
+});

@@ -9,6 +9,7 @@ import CheckoutPage from "@/views/CheckoutPage.vue";
 import UserProfilePage from "@/views/UserProfilePage.vue";
 import BecomeCreatorPage from "@/views/BecomeCreatorPage.vue";
 import CreatorOverviewPage from "@/views/CreatorOverviewPage.vue";
+import CourseManagementPage from "@/views/CourseManagementPage.vue";
 
 const routes = [
     {
@@ -60,6 +61,11 @@ const routes = [
         path: '/creator/:id',
         name: 'CreatorOverview',
         component: CreatorOverviewPage
+    },
+    {
+        path: '/course-management',
+        name: 'CourseManagement',
+        component: CourseManagementPage
     }
     
 ]

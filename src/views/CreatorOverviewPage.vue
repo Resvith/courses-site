@@ -163,11 +163,11 @@
       },
       addNewCourse() {
         // Navigate to the course creation page
-        this.$router.push('/create-course');
+        this.$router.push({ path: '/course-management', query: { mode: 'new' }});
       },
       editCourse(courseId) {
         // Navigate to the course edit page
-        this.$router.push(`/edit-course/${courseId}`);
+        this.$router.push({ path: '/course-management', query: { mode: 'edit', courseId: courseId }});
       },
       async deleteCourse(courseId) {
         if (confirm('Are you sure you want to delete this course?')) {

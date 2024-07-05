@@ -409,37 +409,60 @@ app.post('/api/cart/:token/:courseId', async (req, res) => {
 
 app.post('/api/process-payment', async (req, res) => {
   const { token, amount } = req.body;
-  
+ 
   try {
     const client = await pgPool.connect();
+    await client.query('BEGIN');
+
     const sessionResult = await client.query('SELECT sess FROM sessions WHERE sid = $1', [token]);
     if (sessionResult.rows.length === 0) {
       throw new Error('Invalid session');
     }
     const username = sessionResult.rows[0].sess.userId;
-    
+   
     const userResult = await client.query('SELECT user_id FROM users WHERE username = $1', [username]);
     if (userResult.rows.length === 0) {
       throw new Error('User not found');
     }
     const userId = userResult.rows[0].user_id;
+   
+    const cartResult = await client.query('SELECT cart.course_id, course.price, course.creator_id FROM cart JOIN course ON cart.course_id = course.course_id WHERE cart.user_id = $1', [userId]);
     
-    const cartResult = await client.query('SELECT course_id FROM cart WHERE user_id = $1', [userId]);
-    const courseIds = cartResult.rows.map(row => row.course_id);
-    
-    await client.query('BEGIN');
-    
-    for (const courseId of courseIds) {
-      await client.query('INSERT INTO having_courses (user_id, course_id) VALUES ($1, $2)', [userId, courseId]);
-      await client.query('DELETE FROM cart WHERE user_id = $1 AND course_id = $2', [userId, courseId]);
+    for (const item of cartResult.rows) {
+      const { course_id, price, creator_id } = item;
+      
+      const taxRate = 0.23; // 23% tax rate
+      const creatorRevenueRate = 0.3; // 30% of price goes to creator
+      
+      const taxAmount = price * taxRate;
+      const creatorRevenue = price * creatorRevenueRate;
+      
+      // Insert into course_purchases table
+      await client.query(
+        'INSERT INTO course_purchases (course_id, user_id, purchase_price, tax_amount, creator_revenue, purchase_date) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)',
+        [course_id, userId, price, taxAmount, creatorRevenue]
+      );
+      
+      // Insert into having_courses table
+      await client.query('INSERT INTO having_courses (user_id, course_id) VALUES ($1, $2)', [userId, course_id]);
+      
+      // Update creator's balance
+      await client.query(
+        'UPDATE creator_info SET balance = balance + $1 WHERE creator_id = $2',
+        [creatorRevenue, creator_id]
+      );
+
+      // Remove from cart
+      await client.query('DELETE FROM cart WHERE user_id = $1 AND course_id = $2', [userId, course_id]);
     }
-    
+   
     await client.query('COMMIT');
-    
     client.release();
-    
+   
     res.json({ success: true });
   } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
     console.error('Error processing payment:', error);
     res.status(500).json({ success: false, message: 'Error processing payment' });
   }

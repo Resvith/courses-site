@@ -36,6 +36,11 @@
             </div>
           </div>
         </div>
+        <div class="withdraw-section">
+        <button class="btn btn-primary withdraw-btn" @click="showWithdrawModal">
+          Withdraw Available Funds
+        </button>
+      </div>
       </div>
   
       <!-- Created Courses List -->
@@ -56,11 +61,35 @@
           </div>
         </div>
       </div>
+
+      <!-- Withdraw Modal -->
+      <div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="withdrawModalLabel">Withdraw Funds</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Available to withdraw: ${{ statistics.availableToWithdraw.toFixed(2) }}</p>
+                <div class="mb-3">
+                <label for="withdrawAmount" class="form-label">Amount to withdraw:</label>
+                <input type="number" class="form-control" id="withdrawAmount" v-model="withdrawAmount" step="0.01" min="0" :max="statistics.availableToWithdraw">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="submitWithdraw">Withdraw</button>
+            </div>
+            </div>
+        </div>
+      </div>
     </div>
   </template>
   
   <script>
   import axios from 'axios';
+  import { Modal } from 'bootstrap';
   
   export default {
     name: 'CreatorOverviewPage',
@@ -72,13 +101,48 @@
           availableToWithdraw: 0,
         },
         createdCourses: [],
+        withdrawAmount: 0,
+        withdrawModal: null,
       };
     },
     created() {
       this.fetchCreatorStatistics();
       this.fetchCreatedCourses();
     },
+    mounted() {
+        this.withdrawModal = new Modal(document.getElementById('withdrawModal'));
+    },
     methods: {
+
+        showWithdrawModal() {
+        this.withdrawAmount = 0; // Reset the withdraw amount
+        this.withdrawModal.show();
+        },
+
+        async submitWithdraw() {
+            if (this.withdrawAmount <= 0 || this.withdrawAmount > this.statistics.availableToWithdraw) {
+                alert('Please enter a valid amount to withdraw.');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.post(`http://localhost:3000/api/withdraw/${token}/${this.withdrawAmount}`);
+                
+                if (response.data.success) {
+                alert('Withdrawal successful!');
+                this.withdrawModal.hide();
+                this.fetchCreatorStatistics(); // Refresh statistics after withdrawal
+                } else {
+                alert('Withdrawal failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error processing withdrawal:', error);
+                alert('An error occurred during withdrawal. Please try again.');
+            }
+        },
+
+
       async fetchCreatorStatistics() {
         try {
             const token = localStorage.getItem('token');
@@ -139,13 +203,27 @@
     margin-bottom: 40px;
   }
   
-  .stat-card {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
+  .statistics-section .row {
+    display: flex;
+    }
+
+    .withdraw-section {
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+    margin-top: 20px;
+    }
+
+    .withdraw-btn {
+    padding: 10px 20px;
+    }
+    .stat-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 20px;
+    }
   
   .stat-card h3 {
     font-size: 1.2em;

@@ -715,3 +715,43 @@ app.get('/api/creator-statistics/:token', async (req, res) => {
     res.status(500).json({ error: 'Error fetching creator statistics' });
   }
 });
+
+app.post('/api/withdraw/:token/:amount', async (req, res) => {
+  const token = req.params.token;
+  const amount = parseFloat(req.params.amount);
+
+  try {
+    const username = await getUsernameFromToken(token);
+    const userId = await getUserIdFromUsername(username);
+    
+    const client = await pgPool.connect();
+    
+    await client.query('BEGIN');
+
+    // Get current balance
+    const balanceResult = await client.query('SELECT balance FROM creator_info WHERE user_id = $1', [userId]);
+    const currentBalance = parseFloat(balanceResult.rows[0].balance);
+
+    if (currentBalance < amount) {
+      throw new Error('Insufficient funds');
+    }
+
+    // Update balance
+    const newBalance = currentBalance - amount;
+    await client.query('UPDATE creator_info SET balance = $1 WHERE user_id = $2', [newBalance, userId]);
+
+    // Insert withdrawal record
+    await client.query('INSERT INTO withdrawals (creator_id, amount) VALUES ($1, $2)', [userId, amount]);
+
+    // There should be implement, a real way to withdraw money, like a bank transfer
+
+    await client.query('COMMIT');
+
+    client.release();
+
+    res.json({ success: true, newBalance: newBalance });
+  } catch (error) {
+    console.error('Error processing withdrawal:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});

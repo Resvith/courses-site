@@ -80,6 +80,7 @@
   <script>
   import axios from 'axios';
   import { Modal } from 'bootstrap';
+  import { emitCartUpdate } from '@/eventBus.js';
   
   export default {
     name: 'CheckoutPage',
@@ -132,6 +133,7 @@
             if (response.data.success) {
               alert('Payment successful! Courses have been added to your account.');
               this.paymentModal.hide();
+              emitCartUpdate();
               this.$router.push('/dashboard');
             } else {
               alert('Payment failed. Please try again.');

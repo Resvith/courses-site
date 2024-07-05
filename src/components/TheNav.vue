@@ -56,10 +56,10 @@
         </button>
         
         <ul  class="dropdown-menu" aria-labelledby="userOptionsDropdown">
-          <li><button class="dropdown-item" v-on:click="navigateTo('profile')">Profile</button></li>
-          <li><button class="dropdown-item" v-on:click="navigateTo('settings')">Settings</button></li>
-          <li v-if="userType=='user'"><button class="dropdown-item" v-on:click="navigateTo('become-creator')">Become creator</button></li>
-          <li v-else><button class="dropdown-item" v-on:click="navigateTo(`creator/${creatorId}`)">Creator panel</button></li>
+          <li><button class="dropdown-item" v-on:click="navigateTo('/profile')">Profile</button></li>
+          <li><button class="dropdown-item" v-on:click="navigateTo('/settings')">Settings</button></li>
+          <li v-if="userType=='user'"><button class="dropdown-item" v-on:click="navigateTo('/become-creator')">Become creator</button></li>
+          <li v-else><button class="dropdown-item" v-on:click="navigateTo(`/creator/${creatorId}`)">Creator panel</button></li>
           <li><button class="dropdown-item" v-on:click="logout">Logout</button></li>
         </ul>
       </div>
@@ -100,8 +100,8 @@
 
           <!-- BUTTONS -->
           <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-primary btn-sm" v-on:click="navigateTo('cart')">Open Cart</button>
-            <button class="btn btn-success btn-sm" v-on:click="navigateTo('payment')">Checkout</button>
+            <button class="btn btn-primary btn-sm" v-on:click="navigateTo('/cart')">Open Cart</button>
+            <button class="btn btn-success btn-sm" v-on:click="navigateTo('/checkout')">Checkout</button>
           </div>
         </div>
       </div>

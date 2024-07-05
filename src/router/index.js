@@ -7,6 +7,7 @@ import CourseOverview from "@/views/CourseOverviewPage.vue";
 import CartPage from "@/views/CartPage.vue";
 import CheckoutPage from "@/views/CheckoutPage.vue";
 import UserProfilePage from "@/views/UserProfilePage.vue";
+import BecomeCreatorPage from "@/views/BecomeCreatorPage.vue";
 
 const routes = [
     {
@@ -48,7 +49,13 @@ const routes = [
         path: '/profile',
         name: 'Profile',
         component: UserProfilePage
+    },
+    {
+        path: '/become-creator',
+        name: 'BecomeCreator',
+        component: BecomeCreatorPage
     }
+    
 ]
 
 const router = createRouter({

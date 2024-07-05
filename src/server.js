@@ -460,3 +460,44 @@ app.get('/api/user-type/:token', async (req, res) => {
     res.status(500).send({ success: false, message: 'Error fetching user type' });
   }
 });
+
+app.post('/api/become-creator', async (req, res) => {
+  const { token, ...creatorData } = req.body;
+  try {
+    const username = await getUserIdFromToken(token);
+    if (!username) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    const client = await pgPool.connect();
+    
+    try {
+      await client.query('BEGIN');
+
+      // Get user_id from username
+      const userResult = await client.query('SELECT user_id FROM users WHERE username = $1', [username]);
+      if (userResult.rows.length === 0) {
+        throw new Error('User not found');
+      }
+      const userId = userResult.rows[0].user_id;
+
+      // Update user type to 'creator'
+      await client.query('UPDATE users SET user_type = $1 WHERE user_id = $2', ['creator', userId]);
+    
+      // Insert creator-specific data into creator_info table
+      await client.query('INSERT INTO creator_info (user_id, bank_account, name, surname, birthday, address, city, postal_code, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)', 
+        [userId, creatorData.bankAccount, creatorData.name, creatorData.surname, creatorData.birthday, creatorData.address, creatorData.city, creatorData.postalCode, creatorData.country]);
+
+      await client.query('COMMIT');
+      res.json({ success: true });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error upgrading account:', error);
+    res.status(500).json({ success: false, message: 'Error upgrading account' });
+  }
+});

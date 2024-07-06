@@ -1,121 +1,206 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand navbar-light bg-light">
     <div class="container-fluid">
-      <router-link v-if="!isLoggedIn" :to="{ path: '/' }">
-        CourseCrafters
+      <router-link :to="{ path: isLoggedIn ? '/dashboard' : '/' }" class="navbar-brand d-flex align-items-center">
+        <img src="@/assets/favicon.png" alt="CourseCrafters Logo" class="me-2" style="height: 30px; width: auto;">
+        <span>CourseCrafters</span>
       </router-link>
-      <router-link v-else :to="{ path: '/dashboard' }">
-        CourseCrafters
-      </router-link>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Courses Category
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li class="dropdown-submenu">
-                <a class="dropdown-item dropdown-toggle" href="#">Web Development</a>
-                <ul class="dropdown-menu">
-                  <li>
-                    <a class="dropdown-item" href="#">HTML</a>
-                  </li>
-                  <li class="dropdown-submenu">
-                    <a class="dropdown-item dropdown-toggle" href="#">CSS</a>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="#">Sass</a></li>
-                      <li><a class="dropdown-item" href="#">Less</a></li>
-                      <li><a class="dropdown-item" href="#">Bootstrap</a></li>
-                    </ul>
-                  </li>
-                  <li class="dropdown-submenu">
-                    <a class="dropdown-item dropdown-toggle" href="#">JS</a>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="#">JQuery</a></li>
-                      <li><a class="dropdown-item" href="#">React</a></li>
-                      <li><a class="dropdown-item" href="#">Angular</a></li>
-                      <li><a class="dropdown-item" href="#">Vue.js</a></li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-              <li><a class="dropdown-item" href="#">Mobile Development</a></li>
-              <li><a class="dropdown-item" href="#">AI</a></li>
-            </ul>
-          </li>
-        </ul>
+
+      <div class="navbar-nav me-auto course-category-wrapper">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Courses Category
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <li class="dropdown-submenu">
+              <a class="dropdown-item dropdown-toggle" href="#">Web Development</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">HTML</a></li>
+                <li class="dropdown-submenu">
+                  <a class="dropdown-item dropdown-toggle" href="#">CSS</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Sass</a></li>
+                    <li><a class="dropdown-item" href="#">Less</a></li>
+                    <li><a class="dropdown-item" href="#">Bootstrap</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown-submenu">
+                  <a class="dropdown-item dropdown-toggle" href="#">JS</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">JQuery</a></li>
+                    <li><a class="dropdown-item" href="#">React</a></li>
+                    <li><a class="dropdown-item" href="#">Angular</a></li>
+                    <li><a class="dropdown-item" href="#">Vue.js</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><a class="dropdown-item" href="#">Mobile Development</a></li>
+            <li><a class="dropdown-item" href="#">AI</a></li>
+          </ul>
+        </li>
       </div>
 
-      <!--  OPPTIONS DROPDOWN MENU  -->
-      <div class="dropdown position-relative d-inline-block">
-        <button v-if="isLoggedIn" class="btn d-inline-block ms-auto dropdown-toggle" type="button" id="userOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" v-on:click="openUserOptions">
-            <i class="fas fa-user"></i>
-        </button>
-        
-        <ul  class="dropdown-menu" aria-labelledby="userOptionsDropdown">
-          <li><button class="dropdown-item" v-on:click="navigateTo('/profile')">Profile</button></li>
-          <li><button class="dropdown-item" v-on:click="navigateTo('/settings')">Settings</button></li>
-          <li v-if="userType=='user'"><button class="dropdown-item" v-on:click="navigateTo('/become-creator')">Become creator</button></li>
-          <li v-else><button class="dropdown-item" v-on:click="navigateTo(`/creator/${creatorId}`)">Creator panel</button></li>
-          <li><button class="dropdown-item" v-on:click="logout">Logout</button></li>
-        </ul>
-      </div>
+      <div class="d-flex align-items-center">
+        <!-- Cart icon -->
+        <div class="dropdown position-relative d-inline-block me-2">
+          <button v-if="isLoggedIn" class="btn d-inline-block dropdown-toggle" type="button" id="cartDropdown" data-bs-toggle="dropdown" aria-expanded="false" @click="openCart">
+            <i class="fas fa-shopping-cart"></i>
+          </button>
 
-      <!--  CART DROPDOWN MENU -->
-      <div class="dropdown position-relative d-inline-block">
-        <button v-if="isLoggedIn" class="btn d-inline-block dropdown-toggle" type="button" id="cartDropdown" data-bs-toggle="dropdown" aria-expanded="false" v-on:click="openCart">
-          <i class="fas fa-shopping-cart"></i>
-        </button>
+          <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="cartDropdown" style="width: 300px;">
+            <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="cartDropdown" style="width: 300px;">
+              <div class="overflow-auto cart-items-container" style="max-height: 200px;">
+                <div
+                  v-for="item in cartItems"
+                  :key="item.id"
+                  class="d-flex justify-content-between align-items-center mb-2 cart-item"
+                  @click="navigateTo('/course/' + item.id)"
+                  style="cursor: pointer;"
+                >
+                  <div style="margin-right: 10px;">
+                    <img :src="item.img" alt="Course Image" style="width: 30px; height: 30px;">
+                  </div>
+                  <div style="flex: 1; overflow: hidden;">
+                    <small class="text-muted text-truncate" style="max-width: 200px;">{{ item.title }}</small>
+                  </div>
+                  <div style="margin-left: 10px;">
+                    <span class="text-muted">{{ item.price }} zł</span>
+                  </div>
+                </div>
+              </div>
 
-        <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="cartDropdown" style="width: 300px;">
-          <div class="overflow-auto cart-items-container" style="max-height: 200px;">
-            <!-- Example item in cart -->
-            <div
-              v-for="item in cartItems"
-              :key="item.id"
-              class="d-flex justify-content-between align-items-center mb-2 cart-item"
-              @click="navigateTo('/course/' + item.id)"
-              style="cursor: pointer;"
-            >
-              <div style="margin-right: 10px;">
-                <img :src="item.img" alt="Course Image" style="width: 30px; height: 30px;">
+              <div class="d-flex justify-content-between mt-3">
+                <span>Total:</span>
+                <span>{{ cartItems.reduce((acc, item) => acc + parseFloat(item.price), 0).toFixed(2) }} zł</span>
               </div>
-              <div style="flex: 1; overflow: hidden;">
-                <small class="text-muted text-truncate" style="max-width: 200px;">{{ item.title }}</small>
-              </div>
-              <div style="margin-left: 10px;">
-                <span class="text-muted">{{ item.price }} zł</span>
+
+              <div class="d-flex justify-content-between mt-3">
+                <button class="btn btn-primary btn-sm" @click="navigateTo('cart')">Open Cart</button>
+                <button class="btn btn-success btn-sm" @click="navigateTo('payment')">Checkout</button>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- SUMMARY -->
-          <div class="d-flex justify-content-between mt-3">
-            <span>Total:</span>
-            <span>{{ cartItems.reduce((acc, item) => acc + parseFloat(item.price), 0).toFixed(2) }} zł</span>
-          </div>
+        <!-- User options dropdown -->
+        <div class="dropdown position-relative d-inline-block">
+          <button v-if="isLoggedIn" class="btn d-inline-block dropdown-toggle" type="button" id="userOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false" @click="openUserOptions">
+            <i class="fas fa-user"></i>
+          </button>
+          
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userOptionsDropdown">
+            <li><button class="dropdown-item" @click="navigateTo('profile')">Profile</button></li>
+              <li><button class="dropdown-item" @click="navigateTo('settings')">Settings</button></li>
+              <li v-if="userType=='user'"><button class="dropdown-item" @click="navigateTo('become-creator')">Become creator</button></li>
+              <li v-else><button class="dropdown-item" @click="navigateTo(`creator/${creatorId}`)">Creator panel</button></li>
+              <li><button class="dropdown-item" @click="logout">Logout</button></li>
+          </ul>
+        </div>
 
-          <!-- BUTTONS -->
-          <div class="d-flex justify-content-between mt-3">
-            <button class="btn btn-primary btn-sm" v-on:click="navigateTo('/cart')">Open Cart</button>
-            <button class="btn btn-success btn-sm" v-on:click="navigateTo('/checkout')">Checkout</button>
-          </div>
+        <!-- Login/Register buttons -->
+        <div v-if="!isLoggedIn" class="ms-2">
+          <router-link :to="{ path: '/login' }" class="btn btn-outline-primary">Log In</router-link>
+          <router-link :to="{ path: '/register' }" class="btn btn-primary ms-2">Register</router-link>
         </div>
       </div>
-
-      <!--  LOGIN/REGISTER/LOGOUT BUTTONS  -->
-      <router-link :to="{ path: '/login' }">
-          <button v-if="!isLoggedIn" class="btn btn-outline-primary ms-auto d-none d-lg-inline-block" type="button">Log In</button>
-      </router-link>
-      <router-link :to="{ path: '/register' }">
-        <button v-if="!isLoggedIn" class="btn btn-primary ms-2 d-none d-lg-inline-block" type="button">Register</button>
-      </router-link>
     </div>
   </nav>
 </template>
+
+<style scoped>
+.navbar-nav .dropdown-menu {
+  position: absolute;
+}
+
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+
+.dropdown-submenu > a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+
+.cart-items-container {
+  padding-right: 10px; 
+}
+
+.cart-item {
+  border-bottom: 1px solid lightgrey;
+  padding-bottom: 4px;
+}
+
+.cart-item:last-child {
+  border-bottom: none; 
+}
+
+.dropdown-menu .dropdown-item:focus, 
+.dropdown-menu .dropdown-item:hover, 
+.dropdown-menu .dropdown-item:active {
+  background-color: #f8f9fa;
+  color: #000;
+}
+
+.dropdown-menu {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 991.98px) {
+  .navbar {
+    flex-wrap: wrap;
+  }
+  
+  .course-category-wrapper {
+    width: 100%;
+    justify-content: center;
+    order: 1;
+    margin-top: 10px;
+  }
+
+  .navbar-brand {
+    order: 0;
+  }
+
+  .d-flex.align-items-center {
+    order: 0;
+  }
+
+  .dropdown-submenu > .dropdown-menu {
+    margin-left: 15px;
+  }
+
+  .dropdown-submenu > a:after {
+    transform: rotate(90deg);
+  }
+}
+</style>
 
 <script>
 import axios from 'axios';
@@ -265,50 +350,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Styles to make submenu is same line above */
-.dropdown-submenu {
-  position: relative;
-}
-
-.dropdown-submenu:hover > .dropdown-menu {
-  display: block;
-}
-
-.dropdown-submenu .dropdown-menu {
-  top: 0;
-  left: 100%;
-  margin-top: -5px;
-}
-
-  .cart-items-container {
-    padding-right: 10px; 
-  }
-
-  .cart-item {
-    border-bottom: 1px solid lightgrey;
-    padding-bottom: 4px;
-  }
-
-  .cart-item:last-child {
-    border-bottom: none; 
-  }
-
-  .dropdown-menu .dropdown-item:focus, 
-  .dropdown-menu .dropdown-item:hover, 
-  .dropdown-menu .dropdown-item:active {
-    background-color: #f8f9fa;
-    color: #000;
-  }
-
-  .dropdown-menu {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  }
-
-  .text-truncate {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-</style>

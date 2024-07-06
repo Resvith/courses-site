@@ -75,7 +75,7 @@
 
         <div class="d-flex justify-content-between mt-3">
           <button class="btn btn-primary btn-sm" @click="navigateTo('cart')">Open Cart</button>
-          <button class="btn btn-success btn-sm" @click="navigateTo('payment')">Checkout</button>
+          <button class="btn btn-success btn-sm" @click="navigateTo('checkout')">Checkout</button>
         </div>
       </div>
     </div>

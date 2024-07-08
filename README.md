@@ -59,3 +59,9 @@ password: creator
 11. **Payment Simulation**: Mock payment process
 12. **Category Navigation**: Browse courses by category
 13. **Become a Creator**: Upgrade user account to creator status
+
+## Sample screenshots
+![obraz](https://github.com/Resvith/courses-site/assets/116066494/c2220f3d-cfad-4816-bd0e-dbe1e15bd974)
+![obraz](https://github.com/Resvith/courses-site/assets/116066494/b7a729a5-18f1-443c-b8af-55308286b965)
+![obraz](https://github.com/Resvith/courses-site/assets/116066494/03619330-08a8-4282-b9c8-5b9190c56995)
+

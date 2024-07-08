@@ -1025,3 +1025,22 @@ app.put('/api/admin/users/:userId', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.get('/api/search', async (req, res) => {
+  const searchQuery = req.query.q;
+  try {
+    const client = await pgPool.connect();
+    const result = await client.query(
+      `SELECT course_id, title, description, price, img 
+       FROM course 
+       WHERE status = 'active' AND 
+       (title ILIKE $1 OR description ILIKE $1)`,
+      [`%${searchQuery}%`]
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching courses:', error);
+    res.status(500).json({ error: 'An error occurred while searching courses' });
+  }
+});

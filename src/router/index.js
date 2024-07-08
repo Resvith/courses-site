@@ -12,6 +12,7 @@ import CreatorOverviewPage from "@/views/CreatorOverviewPage.vue";
 import CourseManagementPage from "@/views/CourseManagementPage.vue";
 import AdminOverviewPage from "@/views/AdminOverviewPage.vue";
 import EditUserPage from "@/views/EditUserPage.vue";
+import SearchResultPage from "@/views/SearchResultPage.vue";
 
 const routes = [
     {
@@ -80,6 +81,11 @@ const routes = [
         name: 'EditUser', 
         component: EditUserPage,
         meta: { requiresAdmin: true }
+    },
+    {
+        path: '/search',
+        name: 'SearchResults',
+        component: SearchResultPage
     }
     
     

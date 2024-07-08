@@ -6,38 +6,44 @@
         <span>CourseCrafters</span>
       </router-link>
       <div class="navbar-nav me-auto course-category-wrapper">
-    <li class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Courses Category
-      </a>
-      <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <li class="dropdown-submenu">
-          <a class="dropdown-item dropdown-toggle" href="#">Web Development</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">HTML</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Courses Category
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
             <li class="dropdown-submenu">
-              <a class="dropdown-item dropdown-toggle" href="#">CSS</a>
+              <a class="dropdown-item dropdown-toggle" href="#" @click="searchCategory('Web Development')">Web Development</a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Sass</a></li>
-                <li><a class="dropdown-item" href="#">Less</a></li>
-                <li><a class="dropdown-item" href="#">Bootstrap</a></li>
+                <li><a class="dropdown-item" href="#" @click="searchCategory('HTML')">HTML</a></li>
+                <li class="dropdown-submenu">
+                  <a class="dropdown-item dropdown-toggle" href="#" @click="searchCategory('CSS')">CSS</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('Sass')">Sass</a></li>
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('Less')">Less</a></li>
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('Bootstrap')">Bootstrap</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown-submenu">
+                  <a class="dropdown-item dropdown-toggle" href="#" @click="searchCategory('JavaScript')">JavaScript</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('jQuery')">jQuery</a></li>
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('React')">React</a></li>
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('Angular')">Angular</a></li>
+                    <li><a class="dropdown-item" href="#" @click="searchCategory('Vue.js')">Vue.js</a></li>
+                  </ul>
+                </li>
               </ul>
             </li>
-            <li class="dropdown-submenu">
-              <a class="dropdown-item dropdown-toggle" href="#">JS</a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">JQuery</a></li>
-                <li><a class="dropdown-item" href="#">React</a></li>
-                <li><a class="dropdown-item" href="#">Angular</a></li>
-                <li><a class="dropdown-item" href="#">Vue.js</a></li>
-              </ul>
-            </li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Mobile Development')">Mobile Development</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Programming')">Programming</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Backend Development')">Backend Development</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Python')">Python</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Data Science')">Data Science</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Machine Learning')">Machine Learning</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Algorithms')">Algorithms</a></li>
+            <li><a class="dropdown-item" href="#" @click="searchCategory('Databases')">Databases</a></li>
           </ul>
-        </li>
-        <li><a class="dropdown-item" href="#">Mobile Development</a></li>
-        <li><a class="dropdown-item" href="#">AI</a></li>
-      </ul>
-    </li>
+  </li>
   </div>
 
   <div class="d-flex align-items-center">
@@ -171,6 +177,16 @@ export default {
   methods: {
     navigateTo(route) {
       this.$router.push({ path: `/${route}` });
+    },
+
+    searchCategory(category) {
+      // Prevent the default action of the link
+      event.preventDefault();
+      // Navigate to the SearchResultPage with the category as a query parameter
+      this.$router.push({ 
+        name: 'SearchResults', 
+        query: { q: category }
+      })
     },
 
     async checkSession() {

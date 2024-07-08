@@ -62,23 +62,37 @@ export default {
     margin: 0 auto;
     padding: 20px;
 }
+
 h1, h4 {
     color: #333;
 }
+
 .course-list {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: flex-start;
 }
+
+/* New styles for CourseItem to control width and layout */
+:deep(.course-item) {
+    flex: 0 0 calc(33.333% - 14px); /* Three items per row, accounting for gap */
+    max-width: calc(33.333% - 14px);
+    margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
 @media screen and (max-width: 992px) {
-    .course-list {
-        justify-content: space-around;
+    :deep(.course-item) {
+        flex: 0 0 calc(50% - 10px); /* Two items per row on medium screens */
+        max-width: calc(50% - 10px);
     }
 }
+
 @media screen and (max-width: 768px) {
-    .course-list {
-        justify-content: center;
+    :deep(.course-item) {
+        flex: 0 0 100%; /* Full width on small screens */
+        max-width: 100%;
     }
 }
 </style>

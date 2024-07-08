@@ -101,8 +101,7 @@
         }
         },
       editCourse(courseId) {
-        // Implement course editing logic
-        console.log('Edit course:', courseId);
+        this.$router.push({ path: '/course-management', query: { mode: 'edit', courseId: courseId }});
       },
       async deleteCourse(courseId) {
         try {

@@ -767,7 +767,11 @@ app.put('/api/update-course/:token/:courseId', async (req, res) => {
   try {
     // Verify the token and get the creator ID
     const creatorId = await getCreatorIdFromToken(token);
-    if (!creatorId) {
+    const username = await getUsernameFromToken(token);
+    const userId = await getUserIdFromUsername(username);
+    const userType = await getUserTypeFromUserId(userId);
+
+    if (!creatorId || userType !== 'admin') {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 

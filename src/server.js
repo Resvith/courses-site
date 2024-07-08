@@ -767,11 +767,13 @@ app.put('/api/update-course/:token/:courseId', async (req, res) => {
   try {
     // Verify the token and get the creator ID
     const creatorId = await getCreatorIdFromToken(token);
+    console.log("Creator id: ", creatorId);
     const username = await getUsernameFromToken(token);
     const userId = await getUserIdFromUsername(username);
     const userType = await getUserTypeFromUserId(userId);
 
-    if (!creatorId || userType !== 'admin') {
+    if (!creatorId && userType !== 'admin') {
+      console.log("Unauthorized");
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
@@ -784,15 +786,14 @@ app.put('/api/update-course/:token/:courseId', async (req, res) => {
       const updateCourseQuery = `
         UPDATE course 
         SET title = $1, description = $2, price = $3, img = $4
-        WHERE course_id = $5 AND creator_id = $6
+        WHERE course_id = $5 
         RETURNING course_id`;
       const courseResult = await client.query(updateCourseQuery, [
         updatedCourse.title,
         updatedCourse.description,
         updatedCourse.price,
         updatedCourse.img_url,
-        courseId,
-        creatorId
+        courseId
       ]);
 
       if (courseResult.rows.length === 0) {

@@ -926,6 +926,7 @@ app.get('/api/admin/courses', isAdmin, async (req, res) => {
       FROM course c
       JOIN creator_info ci ON c.creator_id = ci.creator_id
       JOIN users u ON ci.user_id = u.user_id
+      WHERE c.status != 'deleted'
     `);
     client.release();
     res.json(result.rows);

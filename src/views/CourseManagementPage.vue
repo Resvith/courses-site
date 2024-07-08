@@ -73,7 +73,12 @@
               <div v-for="(lesson, lessonIndex) in module.lessons" :key="lessonIndex" class="card mb-3">
                 <div class="card-body">
                   <input v-model="lesson.title" placeholder="Lesson Title" class="form-control mb-2">
-                  <input v-model="lesson.video_url" placeholder="Video URL" class="form-control mb-2">
+                  <input 
+                    v-model="lesson.video_url" 
+                    placeholder="Video URL" 
+                    class="form-control mb-2"
+                    @input="lesson.video_url = convertToEmbedUrl(lesson.video_url)"
+                  >
                   <textarea v-model="lesson.description" placeholder="Lesson Description" class="form-control" rows="2"></textarea>
                 </div>
               </div>
@@ -114,6 +119,14 @@ export default {
     }
   },
   methods: {
+    convertToEmbedUrl(url) {
+      const youtubeRegex = /^.*(youtu.be\/|v\/|\/u\/\w\/|embed\/|watch\?v=|watch\?.*?&v=)([^#&?]*).*/;
+      const match = url.match(youtubeRegex);
+      if (match && match[2].length === 11) {
+        return `https://www.youtube.com/embed/${match[2]}`;
+      }
+      return url; // Return the original URL if it doesn't match the pattern
+    },
     async loadCourseData(courseId) {
       try {
         // Fetch course details
@@ -206,6 +219,12 @@ export default {
         console.log("Saving course to endpoint:", endpoint);
 
         const method = this.mode === 'new' ? 'post' : 'put';
+
+        this.course.modules.forEach(module => {
+          module.lessons.forEach(lesson => {
+            lesson.video_url = this.convertToEmbedUrl(lesson.video_url);
+          });
+        });
 
         // Use the img_url from the input, not the preview
         const courseData = {

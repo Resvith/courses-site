@@ -1,5 +1,7 @@
 # Courses Site
-
+## Stack
+Node.js/Express<br>
+Vue.js/Bootstrap
 ## Project setup
 ### 1. Install Node.js from official website
 

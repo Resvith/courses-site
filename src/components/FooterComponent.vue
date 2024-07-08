@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-dark text-light py-4">
+  <footer class="bg-dark text-light py-4 footer">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-4 col-6 mb-3">
@@ -49,5 +49,11 @@ a:hover {
 }
 footer {
   min-height: 15vh; /* Upewnij się, że ta wartość odpowiada Twoim potrzebom układu */
+}
+.footer {
+  flex-shrink: 0;
+  background-color: #f8f9fa;
+  padding: 20px 0;
+  margin-top: auto;
 }
 </style>

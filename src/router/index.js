@@ -11,6 +11,7 @@ import BecomeCreatorPage from "@/views/BecomeCreatorPage.vue";
 import CreatorOverviewPage from "@/views/CreatorOverviewPage.vue";
 import CourseManagementPage from "@/views/CourseManagementPage.vue";
 import AdminOverviewPage from "@/views/AdminOverviewPage.vue";
+import EditUserPage from "@/views/EditUserPage.vue";
 
 const routes = [
     {
@@ -73,7 +74,14 @@ const routes = [
         name: 'AdminOverview',
         component: AdminOverviewPage,
         meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+        path: '/admin/edit-user/:id', 
+        name: 'EditUser', 
+        component: EditUserPage,
+        meta: { requiresAdmin: true }
     }
+    
     
 ]
 

@@ -992,3 +992,36 @@ app.post('/api/admin/deactivate-user/:token/:userId', async (req, res) => {
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
+
+// Get user details
+app.get('/api/admin/users/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    client = await pgPool.connect();
+    const result = await client.query('SELECT user_id, username, email, user_type FROM users WHERE user_id = $1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update user
+app.put('/api/admin/users/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  const { username, email, user_type } = req.body;
+  try {
+    client = await pgPool.connect();
+    await client.query(
+      'UPDATE users SET username = $1, email = $2, user_type = $3 WHERE user_id = $4',
+      [username, email, user_type, userId]
+    );
+    res.json({ message: 'User updated successfully' });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});

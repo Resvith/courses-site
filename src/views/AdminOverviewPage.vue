@@ -135,8 +135,7 @@
         }
         },
       editUser(userId) {
-        // Implement user editing logic
-        console.log('Edit user:', userId);
+        this.$router.push(`/admin/edit-user/${userId}`);
       },
       async deleteUser(userId) {
         try {

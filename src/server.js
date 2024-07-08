@@ -888,3 +888,54 @@ app.post('/api/create-course/:token', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error creating course' });
   }
 });
+
+
+// Middleware to check if the user is an admin
+const isAdmin = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token provided' });
+
+  try {
+    const username = await getUsernameFromToken(token);
+    const userId = await getUserIdFromUsername(username);
+    const userType = await getUserTypeFromUserId(userId);
+
+    if (userType !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin rights required.' });
+    }
+    next();
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+// Get all courses (for admin)
+app.get('/api/admin/courses', isAdmin, async (req, res) => {
+  try {
+    const client = await pgPool.connect();
+    const result = await client.query(`
+      SELECT c.course_id, c.title, c.price, c.status, u.username as creator_name
+      FROM course c
+      JOIN creator_info ci ON c.creator_id = ci.creator_id
+      JOIN users u ON ci.user_id = u.user_id
+    `);
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching all courses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all users (for admin)
+app.get('/api/admin/users', isAdmin, async (req, res) => {
+  try {
+    const client = await pgPool.connect();
+    const result = await client.query('SELECT user_id, username, email, user_type FROM users');
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});

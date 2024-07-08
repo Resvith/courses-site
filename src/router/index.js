@@ -10,6 +10,7 @@ import UserProfilePage from "@/views/UserProfilePage.vue";
 import BecomeCreatorPage from "@/views/BecomeCreatorPage.vue";
 import CreatorOverviewPage from "@/views/CreatorOverviewPage.vue";
 import CourseManagementPage from "@/views/CourseManagementPage.vue";
+import AdminOverviewPage from "@/views/AdminOverviewPage.vue";
 
 const routes = [
     {
@@ -66,6 +67,12 @@ const routes = [
         path: '/course-management',
         name: 'CourseManagement',
         component: CourseManagementPage
+    },
+    {
+        path: '/admin-management',
+        name: 'AdminOverview',
+        component: AdminOverviewPage,
+        meta: { requiresAuth: true, requiresAdmin: true }
     }
     
 ]

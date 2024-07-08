@@ -1044,3 +1044,36 @@ app.get('/api/search', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while searching courses' });
   }
 });
+
+// Get all categories
+app.get('/api/categories', async (req, res) => {
+  try {
+      const client = await pool.connect();
+      const result = await client.query('SELECT * FROM categories');
+      client.release();
+      res.json(result.rows);
+  } catch (err) {
+      console.error(err);
+      res.status(500).send('Server error');
+  }
+});
+
+
+// Get courses by category
+app.get('/api/courses/category/:categoryId', async (req, res) => {
+  const categoryId = req.params.categoryId;
+  try {
+      const client = await pool.connect();
+      const result = await client.query(
+          'SELECT c.* FROM course c ' +
+          'JOIN course_category cc ON c.course_id = cc.course_id ' +
+          'WHERE cc.category_id = $1 AND c.status = $2',
+          [categoryId, 'active']
+      );
+      client.release();
+      res.json(result.rows);
+  } catch (err) {
+      console.error(err);
+      res.status(500).send('Server error');
+  }
+});

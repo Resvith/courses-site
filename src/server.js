@@ -164,7 +164,10 @@ app.post('/api/login', async (req, res) => {
       const isLoggedOn = await bcrypt.compare(userData.password, user.password);
       if (isLoggedOn) {
         req.session.userId = user.username;
-        req.session.userType = user.user_type; // Add this line
+        req.session.userType = user.user_type;
+        if (user.is_active === false) {
+          res.send({ success: false, message: 'Account was deleted' });
+        }
         req.session.save((err) => {
           if (err) {
             console.error(err);
@@ -937,5 +940,51 @@ app.get('/api/admin/users', isAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error fetching all users:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/admin/active-users/:token', async (req, res) => {
+  const token = req.params.token;
+  const adminUsername = await getUsernameFromToken(token);
+  const adminUserId = await getUserIdFromUsername(adminUsername);
+  const adminUserType = await getUserTypeFromUserId(adminUserId);
+
+  if (adminUserType !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Access denied. Admin rights required.' });
+  }
+
+  try {
+    const client = await pgPool.connect();
+    const result = await client.query('SELECT * FROM users WHERE is_active = true');
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching active users:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+// Endpoint do deaktywacji użytkownika
+app.post('/api/admin/deactivate-user/:token/:userId', async (req, res) => {
+  const token = req.params.token;
+  const userId = req.params.userId;
+
+  const adminUsername = await getUsernameFromToken(token);
+  const adminUserId = await getUserIdFromUsername(adminUsername);
+  const adminUserType = await getUserTypeFromUserId(adminUserId);
+  if (adminUserType !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Access denied. Admin rights required.' });
+  }
+
+  try {
+    const client = await pgPool.connect();
+    await client.query('BEGIN');
+    await client.query('UPDATE users SET is_active = false WHERE user_id = $1', [userId]);
+    await client.query('COMMIT');
+    client.release();
+    res.json({ success: true, message: 'User deactivated successfully' });
+  } catch (error) {
+    console.error('Error deactivating user:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });

@@ -40,6 +40,7 @@ export default {
 
 <style scoped>
 .search-container {
+  margin-top: 10px;
   margin-bottom: 20px;
 }
 .input-group {

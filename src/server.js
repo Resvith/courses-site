@@ -732,8 +732,9 @@ app.post('/api/withdraw/:token/:amount', async (req, res) => {
     await client.query('BEGIN');
 
     // Get current balance
-    const balanceResult = await client.query('SELECT balance FROM creator_info WHERE user_id = $1', [userId]);
+    const balanceResult = await client.query('SELECT balance, creator_id FROM creator_info WHERE user_id = $1', [userId]);
     const currentBalance = parseFloat(balanceResult.rows[0].balance);
+    const creatorId = balanceResult.rows[0].creator_id;
 
     if (currentBalance < amount) {
       throw new Error('Insufficient funds');
@@ -741,10 +742,10 @@ app.post('/api/withdraw/:token/:amount', async (req, res) => {
 
     // Update balance
     const newBalance = currentBalance - amount;
-    await client.query('UPDATE creator_info SET balance = $1 WHERE user_id = $2', [newBalance, userId]);
+    await client.query('UPDATE creator_info SET balance = $1 WHERE creator_id = $2', [newBalance, creatorId]);
 
     // Insert withdrawal record
-    await client.query('INSERT INTO withdrawals (creator_id, amount) VALUES ($1, $2)', [userId, amount]);
+    await client.query('INSERT INTO withdrawals (creator_id, amount) VALUES ($1, $2)', [creatorId, amount]);
 
     // There should be implement, a real way to withdraw money, like a bank transfer
 

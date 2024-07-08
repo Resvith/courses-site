@@ -67,13 +67,13 @@ export default {
   methods: {
 
     async submitRegistration() {
-      // if (!this.arePasswordsTheSame()) {
-      //   return;
-      // }
-      // if (!this.enoughPasswordComplexity()) {
-      //   this.errors.passwordError = 'Password must be at least 8 characters long and contain at least one uppercase letter, one number and one special character';
-      //   return;
-      // }
+      if (!this.arePasswordsTheSame()) {
+        return;
+      }
+      if (!this.enoughPasswordComplexity()) {
+        this.errors.passwordError = 'Password must be at least 8 characters long and contain at least one uppercase letter, one number and one special character';
+        return;
+      }
       const isUsernameAvailable = await this.isUsernameAvailable(this.userData.username);
         if (!isUsernameAvailable){
             this.errors.usernameError = 'Username is already taken';

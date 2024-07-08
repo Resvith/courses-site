@@ -410,8 +410,8 @@ app.post('/api/cart/:token/:courseId', async (req, res) => {
 app.post('/api/process-payment', async (req, res) => {
   const { token, amount } = req.body;
  
+  const client = await pgPool.connect();
   try {
-    const client = await pgPool.connect();
     await client.query('BEGIN');
 
     const sessionResult = await client.query('SELECT sess FROM sessions WHERE sid = $1', [token]);
@@ -444,7 +444,7 @@ app.post('/api/process-payment', async (req, res) => {
       );
       
       // Insert into having_courses table
-      await client.query('INSERT INTO having_courses (user_id, course_id) VALUES ($1, $2)', [userId, course_id]);
+      await client.query('INSERT INTO having_courses (user_id, course_id, bought_date) VALUES ($1, $2, CURRENT_TIMESTAMP)', [userId, course_id]);
       
       // Update creator's balance
       await client.query(

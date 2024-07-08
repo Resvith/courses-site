@@ -69,11 +69,33 @@
     min-height: calc(100vh - 15vh); /* Screen view - footer min size */
   }
   .course-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start; /* Aligns items to the left */
+}
+
+.course-item {
+  flex: 0 0 calc(33.333% - 14px); /* Fixed width for 3 columns, accounting for gap */
+  max-width: calc(33.333% - 14px);
+  margin-bottom: 20px;
+}
+
+/* Media query for tablets */
+@media screen and (max-width: 992px) {
+  .course-item {
+    flex: 0 0 calc(50% - 10px);
+    max-width: calc(50% - 10px);
   }
+}
+
+/* Media query for mobile devices */
+@media screen and (max-width: 768px) {
+  .course-item {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
 
   .no-course {
     text-align: center;

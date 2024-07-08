@@ -90,6 +90,7 @@
         <li><button class="dropdown-item" @click="navigateTo('profile')">Profile</button></li>
         <li><button class="dropdown-item" @click="navigateTo('settings')">Settings</button></li>
         <li v-if="userType=='user'"><button class="dropdown-item" @click="navigateTo('become-creator')">Become creator</button></li>
+        <li v-else-if="userType=='admin'"><button class="dropdown-item" @click="navigateTo(`admin-management`)">Admin panel</button></li>
         <li v-else><button class="dropdown-item" @click="navigateTo(`creator/${creatorId}`)">Creator panel</button></li>
         <li><button class="dropdown-item" @click="logout">Logout</button></li>
       </ul>
